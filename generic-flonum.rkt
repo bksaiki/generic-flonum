@@ -94,8 +94,7 @@
         #:transparent
         #:methods gen:custom-write
         [(define (write-proc x port mode)
-          (fprintf port "#<gfl[~a, ~a]: ~a>" (gfl-ex x) (gfl-nb x)
-                        (bigfloat->string (gfl-val x))))])
+          (fprintf port "#<gfl[~a, ~a]: ~a>" (gfl-ex x) (gfl-nb x) (gfl->string x)))])
 
 ;;;;;;;;;;;;;;;; Utility ;;;;;;;;;;;;;;;;        
 
@@ -138,7 +137,12 @@
   (gflonum ((mpfr-eval emin emax sig) string->bigfloat x) (gfl-exponent) (gfl-bits)))
 
 (define (gfl->string x)
-  (bigfloat->string (gfl-val x)))
+  (define v (gfl-val x))
+  (cond
+   [(bfnan? v) "+nan.0"]
+   [(bf= v +inf.bf) "+inf.0"]
+   [(bf= v -inf.bf) "-inf.0"]
+   [else (bigfloat->string v)]))
 
 (define (gfl x)
   (cond
