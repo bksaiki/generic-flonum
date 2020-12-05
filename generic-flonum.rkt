@@ -17,12 +17,20 @@
    [gflzero? (gfl? . -> . boolean?)]
    [gflnegative? (gfl? . -> . boolean?)]
    [gflpositive? (gfl? . -> . boolean?)]
+   [gflsubnormal? (gfl? . -> . boolean?)]
+
+   [gfl= (gfl? gfl? ... . -> . boolean?)]
+   [gfl< (gfl? gfl? ... . -> . boolean?)]
+   [gfl> (gfl? gfl? ... . -> . boolean?)]
+   [gfl<= (gfl? gfl? ... . -> . boolean?)]
+   [gfl>= (gfl? gfl? ... . -> . boolean?)]
 
    [gfl+ (gfl? ... . -> . gfl?)]
    [gfl- (gfl? gfl? ... . -> . gfl?)]
    [gfl* (gfl? ... . -> . gfl?)]
    [gfl/ (gfl? gfl? ... . -> . gfl?)]
-
+   
+   [gflsgn (gfl? . -> . boolean?)]
    [gflneg (gfl? . -> . gfl?)]
    [gflsqrt (gfl? . -> . gfl?)]
    [gflcbrt (gfl? . -> . gfl?)]
@@ -132,7 +140,6 @@
 (define (gfl->string x)
   (bigfloat->string (gfl-val x)))
 
-;; Generic constructor
 (define (gfl x)
   (cond
    [(real? x) (real->gfl x)]
@@ -141,7 +148,7 @@
 ;;;;;;;;;;;;;;;; Predicates ;;;;;;;;;;;;;;;;
 
 (define-syntax-rule (gfl-predicate name fun)
-  (define (name x) fun (gfl-val x)))
+  (define (name x) (fun (gfl-val x))))
 
 (define-syntax-rule (gfl-predicates [name fun] ...)
   (begin (gfl-predicate name fun) ...))
@@ -152,6 +159,27 @@
  [gflzero? bfzero?]
  [gflnegative? bfnegative?]
  [gflpositive? bfpositive?])
+
+;;;;;;;;;;;;;;;; Comparators ;;;;;;;;;;;;;;;;
+
+(define-syntax-rule (gfl-comparator name fun)
+  (define (name head . rest)
+    (let loop ([head head] [args rest])
+      (cond
+       [(null? args) #t]
+       [(fun (gfl-val head) (gfl-val (car args)))
+        (loop (car args) (cdr args))]
+       [else #f]))))
+
+(define-syntax-rule (gfl-comparators [name fun] ...)
+  (begin (gfl-comparator name fun) ...))
+
+(gfl-comparators
+ [gfl=  bf=]
+ [gfl<  bf<]
+ [gfl>  bf>]
+ [gfl<= bf<=]
+ [gfl>= bf>=])
 
 ;;;;;;;;;;;;;;;; Unary operators ;;;;;;;;;;;;;;;;
 
@@ -283,3 +311,19 @@
         [else (loop ((mpfr-eval emin emax sig) mpfr-div head (gfl-val (car args)))
                     (cdr args))]))
     (gfl-exponent) (gfl-bits)))
+
+;;;;;;;;;;;;;;;;;;; Miscellaneous operators ;;;;;;;;;;;;;;;;
+
+(define (gflsgn x)
+  (cond [(gflnegative? x) -1]
+        [(gflpositive? x) 1]
+        [else 0]))
+
+(define (gflsubnormal? x)
+  (cond
+   [(or (gflnan? x) (gflinfinite? x) (gflzero? x)) #f]
+   [else
+    (define sig (- (gfl-bits) (gfl-exponent)))
+    (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+    (define exp (+ (bigfloat-exponent (gfl-val x)) sig -1))
+    (negative? (+ exp emax -2))]))

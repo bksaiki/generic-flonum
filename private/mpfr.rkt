@@ -1,8 +1,7 @@
 #lang racket
 
 (require math/bigfloat)
-(provide (all-defined-out) (all-from-out math/bigfloat)
-         mpfr-set mpfr-fma)
+(provide (all-defined-out) (all-from-out math/bigfloat (submod "." hairy)))
 
 ;;; Isolate FFI code
 (module hairy racket/base
