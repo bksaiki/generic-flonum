@@ -23,17 +23,17 @@
   (define floats (make-list 1000 (random-double)))
   (define float-2args (collect-pairs floats))
 
-  (define gfls (map real->gfl floats))
+  (define gfls (map gfl floats))
   (define gfl-2args (collect-pairs gfls))
 
   (for ([fl gfls])  ; real<->gfl conversion
-    (check-equal? (real->gfl (gfl->real fl)) fl))
+    (check-equal? (gfl (gfl->real fl)) fl))
   (for ([fl gfls])  ; bigfloat<->gfl conversion
     (check-equal? (bigfloat->gfl (gfl->bigfloat fl)) fl))
   (for ([fl gfls])  ; ordinal<->gfl conversion
     (check-equal? (ordinal->gfl (gfl->ordinal fl)) fl))
   (for ([fl gfls])  ; ordinal<->gfl conversion
-    (check-equal? (string->gfl (gfl->string fl)) fl))
+    (check-equal? (gfl (gfl->string fl)) fl))
 
   (define 2ary-ops
     (list (cons + gfl+) (cons - gfl-) (cons * gfl*) (cons / gfl/)
@@ -42,10 +42,10 @@
   (for ([op 2ary-ops]) 
     (for ([gfl-arg gfl-2args] [fl-arg float-2args])
       (let ([real ((car op) (car fl-arg) (cdr fl-arg))]
-            [gfl ((cdr op) (car gfl-arg) (cdr gfl-arg))])
+            [fl ((cdr op) (car gfl-arg) (cdr gfl-arg))])
         (cond
          [(not (real? real))
           (with-check-info (['expected real] ['actual gfl])
-            (check-true (gflnan? gfl)))]
-         [else (check-equal? gfl (real->gfl real))]))))
+            (check-true (gflnan? fl)))]
+         [else (check-equal? fl (gfl real))]))))
 )

@@ -1,15 +1,15 @@
 #lang racket
 
 (require math/bigfloat "private/mpfr.rkt")
-(provide gfl-exponent gfl-nbits
+(provide gfl-exponent gfl-bits
   (contract-out
+   [gfl ((or/c real? string?) . -> . gfl?)]
    [real->gfl (real? . -> . gfl?)]
    [gfl->real (gfl? . -> . real?)]
    [bigfloat->gfl (bigfloat? . -> . gfl?)]
    [gfl->bigfloat (gfl? . -> . bigfloat?)]
    [ordinal->gfl (exact-integer? . -> . gfl?)]
    [gfl->ordinal (gfl? . -> . exact-integer?)]
-   [string->gfl (string? . -> . gfl?)]
    [gfl->string (gfl? . -> . string?)]
 
    [gflnan? (gfl? . -> . boolean?)]
@@ -60,14 +60,15 @@
 ;;;;;;;;;;;; Parameters / Structs ;;;;;;;;;;;;   
 
 (define gfl-exponent (make-parameter 11))
-(define gfl-nbits (make-parameter 64))
-(define gfl-verbose (make-parameter #t))
+(define gfl-bits (make-parameter 64))
 
-(struct gfl (val ex bits)
+(struct gfl (val ex nb)
+        #:name gflonum
+        #:constructor-name gflonum
         #:transparent
         #:methods gen:custom-write
         [(define (write-proc x port mode)
-          (fprintf port "#<gfl[~a, ~a]: ~a>" (gfl-ex x) (gfl-bits x)
+          (fprintf port "#<gfl[~a, ~a]: ~a>" (gfl-ex x) (gfl-nb x)
                         (bigfloat->string (gfl-val x))))])
 
 ;;;;;;;;;;;;;;;; Utility ;;;;;;;;;;;;;;;;        
@@ -79,39 +80,45 @@
 ;;;;;;;;;;;;;;;; Conversions ;;;;;;;;;;;;;;;;
 
 (define (real->gfl x)
-  (define sig (- (gfl-nbits) (gfl-exponent)))
+  (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gfl ((mpfr-eval emin emax sig) mpfr-set x) (gfl-exponent) (gfl-nbits)))
+  (gflonum ((mpfr-eval emin emax sig) mpfr-set x) (gfl-exponent) (gfl-bits)))
 
 (define (gfl->real x)
   (bigfloat->real (gfl-val x)))
 
 (define (bigfloat->gfl x)
-  (define sig (- (gfl-nbits) (gfl-exponent)))
+  (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gfl ((mpfr-eval emin emax sig) mpfr-set x) (gfl-exponent) (gfl-nbits)))
+  (gflonum ((mpfr-eval emin emax sig) mpfr-set x) (gfl-exponent) (gfl-bits)))
 
 (define (gfl->bigfloat x)
   (bfcopy (gfl-val x)))
 
 (define (ordinal->gfl x)
-  (define sig (- (gfl-nbits) (gfl-exponent)))
+  (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gfl ((mpfr-eval emin emax sig) (curryr ordinal->mpfr (gfl-exponent) sig) x)
-       (gfl-exponent) (gfl-nbits)))
+  (gflonum ((mpfr-eval emin emax sig) (curryr ordinal->mpfr (gfl-exponent) sig) x)
+       (gfl-exponent) (gfl-bits)))
 
 (define (gfl->ordinal x)
-  (define sig (- (gfl-nbits) (gfl-exponent)))
+  (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-ex x) sig))
   ((mpfr-eval emin emax sig) (curryr mpfr->ordinal (gfl-exponent) sig) (gfl-val x)))
 
 (define (string->gfl x)
-  (define sig (- (gfl-nbits) (gfl-exponent)))
+  (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gfl ((mpfr-eval emin emax sig) string->bigfloat x) (gfl-exponent) (gfl-nbits)))
+  (gflonum ((mpfr-eval emin emax sig) string->bigfloat x) (gfl-exponent) (gfl-bits)))
 
 (define (gfl->string x)
   (bigfloat->string (gfl-val x)))
+
+;; Generic constructor
+(define (gfl x)
+  (cond
+   [(real? x) (real->gfl x)]
+   [(string? x) (string->gfl x)]))
 
 ;;;;;;;;;;;;;;;; Predicates ;;;;;;;;;;;;;;;;
 
@@ -132,10 +139,10 @@
 
 (define-syntax-rule (gfl-1ary-fun name mpfr-fun)
   (define (name x)
-    (define sig (- (gfl-nbits) (gfl-exponent)))
+    (define sig (- (gfl-bits) (gfl-exponent)))
     (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-    (gfl ((mpfr-eval emin emax sig) mpfr-fun (gfl-val x))
-         (gfl-exponent) (gfl-nbits))))
+    (gflonum ((mpfr-eval emin emax sig) mpfr-fun (gfl-val x))
+         (gfl-exponent) (gfl-bits))))
 
 (define-syntax-rule (gfl-1ary-funs [name mpfr-fun] ...)
   (begin (gfl-1ary-fun name mpfr-fun) ...))
@@ -176,10 +183,10 @@
 
 (define-syntax-rule (gfl-2ary-fun name mpfr-fun)
   (define (name x y)
-    (define sig (- (gfl-nbits) (gfl-exponent)))
+    (define sig (- (gfl-bits) (gfl-exponent)))
     (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-    (gfl ((mpfr-eval emin emax sig) mpfr-fun (gfl-val x) (gfl-val y))
-         (gfl-exponent) (gfl-nbits))))
+    (gflonum ((mpfr-eval emin emax sig) mpfr-fun (gfl-val x) (gfl-val y))
+         (gfl-exponent) (gfl-bits))))
 
 (define-syntax-rule (gfl-2ary-funs [name mpfr-fun] ...)
   (begin (gfl-2ary-fun name mpfr-fun) ...))
