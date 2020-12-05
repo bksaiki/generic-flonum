@@ -104,9 +104,24 @@
  [mpfr-sub 'mpfr_sub]
  [mpfr-mul 'mpfr_mul]
  [mpfr-div 'mpfr_div]
- [mpfr-pow 'mpfr_pow]
  [mpfr-atan2 'mpfr_atan2]
- [mpfr-remainder 'mpfr_remainder])
+ [mpfr-copysign 'mpfr-copysign]
+ [mpfr-ceil 'mpfr_ceil]
+ [mpfr-dim 'mpfr_dim]
+ [mpfr-erf 'mpfr_erf]
+ [mpfr-erfc 'mpfr_erfc]
+ [mpfr-floor 'mpfr_floor]
+ [mpfr-fmod 'mpfr_fmod]
+ [mpfr-gamma 'mpfr_gamma]
+ [mpfr-hypot 'mpfr_hypot]
+ [mpfr-lgamma 'mpfr_lgamma]
+ [mpfr-max 'mpfr_max]
+ [mpfr-min 'mpfr_min]
+ [mpfr-pow 'mpfr_pow]
+ [mpfr-remainder 'mpfr_remainder]
+ [mpfr-rint 'mpfr_rint]
+ [mpfr-round 'mpfr_round]
+ [mpfr-trunc 'mpfr_trunc])
   
 (define ((mpfr-eval emin emax sig) proc . args)
   (parameterize ([bf-precision sig])

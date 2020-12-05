@@ -18,6 +18,11 @@
    [gflnegative? (gfl? . -> . boolean?)]
    [gflpositive? (gfl? . -> . boolean?)]
 
+   [gfl+ (gfl? ... . -> . gfl?)]
+   [gfl- (gfl? gfl? ... . -> . gfl?)]
+   [gfl* (gfl? ... . -> . gfl?)]
+   [gfl/ (gfl? gfl? ... . -> . gfl?)]
+
    [gflneg (gfl? . -> . gfl?)]
    [gflsqrt (gfl? . -> . gfl?)]
    [gflcbrt (gfl? . -> . gfl?)]
@@ -49,13 +54,26 @@
    [gflasinh (gfl? . -> . gfl?)]
    [gflatanh (gfl? . -> . gfl?)]
 
-   [gfl+ (gfl? gfl? . -> . gfl?)]
-   [gfl- (gfl? gfl? . -> . gfl?)]
-   [gfl* (gfl? gfl? . -> . gfl?)]
-   [gfl/ (gfl? gfl? . -> . gfl?)]
-   [gflexpt (gfl? gfl? . -> . gfl?)]
    [gflatan2 (gfl? gfl? . -> . gfl?)]
-   [gflremainder (gfl? gfl? . -> . gfl?)]))
+   [gflceiling (gfl? gfl? . -> . gfl?)]
+   [gflcopysign (gfl? gfl? . -> . gfl?)]
+   [gfldim (gfl? gfl? . -> . gfl?)]
+   [gflerf (gfl? gfl? . -> . gfl?)]
+   [gflerfc (gfl? gfl? . -> . gfl?)]
+   [gflexpt (gfl? gfl? . -> . gfl?)]
+   [gflfloor (gfl? gfl? . -> . gfl?)]
+   [gflfmod (gfl? gfl? . -> . gfl?)]
+   [gflgamma (gfl? gfl? . -> . gfl?)]
+   [gflhypot (gfl? gfl? . -> . gfl?)]
+   [gfllgamma (gfl? gfl? . -> . gfl?)]
+   [gflmax (gfl? gfl? . -> . gfl?)]
+   [gflmin (gfl? gfl? . -> . gfl?)]
+   [gflremainder (gfl? gfl? . -> . gfl?)]
+   [gflrint (gfl? gfl? . -> . gfl?)]
+   [gflround (gfl? gfl? . -> . gfl?)]
+   [gfltruncate (gfl? gfl? . -> . gfl?)]
+
+   [gflfma (gfl? gfl? gfl? . -> . gfl?)]))
 
 ;;;;;;;;;;;; Parameters / Structs ;;;;;;;;;;;;   
 
@@ -192,10 +210,76 @@
   (begin (gfl-2ary-fun name mpfr-fun) ...))
 
 (gfl-2ary-funs
- [gfl+ mpfr-add]
- [gfl- mpfr-sub]
- [gfl* mpfr-mul]
- [gfl/ mpfr-div]
- [gflexpt mpfr-pow]
  [gflatan2 mpfr-atan2]
- [gflremainder mpfr-remainder])
+ [gflceiling mpfr-ceil]
+ [gflcopysign mpfr-copysign]
+ [gfldim mpfr-dim]
+ [gflerf mpfr-erf]
+ [gflerfc mpfr-erfc]
+ [gflexpt mpfr-pow]
+ [gflfloor mpfr-floor]
+ [gflfmod mpfr-fmod]
+ [gflgamma mpfr-gamma]
+ [gflhypot mpfr-hypot]
+ [gfllgamma mpfr-lgamma]
+ [gflmax mpfr-max]
+ [gflmin mpfr-min]
+ [gflremainder mpfr-remainder]
+ [gflrint mpfr-rint]
+ [gflround mpfr-round]
+ [gfltruncate mpfr-trunc])
+
+;;;;;;;;;;;;;;;; Ternary operators ;;;;;;;;;;;;;;;;
+
+(define (gflfma x y z)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum
+    ((mpfr-eval emin emax sig) mpfr-fma (gfl-val x) (gfl-val y) (gfl-val z))
+    (gfl-exponent) (gfl-bits)))
+
+;;;;;;;;;;;;;;;;;;; Variadic operators ;;;;;;;;;;;;;;;;
+
+(define (gfl+ . args)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum 
+    (let loop ([args (reverse args)])
+      (cond
+        [(null? args) 0.bf]
+        [(= (length args) 1) (gfl-val (car args))]
+        [else ((mpfr-eval emin emax sig) mpfr-add (gfl-val (car args)) (loop (cdr args)))]))
+    (gfl-exponent) (gfl-bits)))
+
+(define (gfl- head . rest)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum 
+    (let loop ([head (gfl-val head)] [args rest])
+      (cond
+        [(null? args) head]
+        [else (loop ((mpfr-eval emin emax sig) mpfr-sub head (gfl-val (car args)))
+                    (cdr args))]))
+    (gfl-exponent) (gfl-bits)))
+
+(define (gfl* . args)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum 
+    (let loop ([args (reverse args)])
+      (cond
+        [(null? args) 1.bf]
+        [(= (length args) 1) (gfl-val (car args))]
+        [else ((mpfr-eval emin emax sig) mpfr-mul (gfl-val (car args)) (loop (cdr args)))]))
+    (gfl-exponent) (gfl-bits)))
+
+(define (gfl/ head . rest)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum 
+    (let loop ([head (gfl-val head)] [args rest])
+      (cond
+        [(null? args) head]
+        [else (loop ((mpfr-eval emin emax sig) mpfr-div head (gfl-val (car args)))
+                    (cdr args))]))
+    (gfl-exponent) (gfl-bits)))
