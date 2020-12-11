@@ -1,5 +1,7 @@
 #lang racket
 
-(require "generic-flonum.rkt")
+(require "private/gfl.rkt"
+         "private/gfl-consts.rkt")
 
-(provide (all-from-out "generic-flonum.rkt"))
+(provide (all-from-out "private/gfl.rkt"
+                       "private/gfl-consts.rkt"))

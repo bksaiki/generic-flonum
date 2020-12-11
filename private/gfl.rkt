@@ -1,9 +1,12 @@
 #lang racket
 
-(require math/bigfloat "private/mpfr.rkt")
+(require math/bigfloat "mpfr.rkt")
+
 (provide gfl-exponent gfl-bits
   (contract-out
    [gfl ((or/c real? string?) . -> . gfl?)]
+   [gfl? (any/c . -> . boolean?)]
+
    [real->gfl (real? . -> . gfl?)]
    [gfl->real (gfl? . -> . real?)]
    [bigfloat->gfl (bigfloat? . -> . gfl?)]
@@ -286,12 +289,14 @@
 (define (gfl- head . rest)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum 
-    (let loop ([head (gfl-val head)] [args rest])
-      (cond
-        [(null? args) head]
-        [else (loop ((mpfr-eval emin emax sig) mpfr-sub head (gfl-val (car args)))
-                    (cdr args))]))
+  (gflonum
+    (if (null? rest)
+        ((mpfr-eval emin emax sig) mpfr-neg (gfl-val head))
+        (let loop ([head (gfl-val head)] [args rest])
+          (cond
+           [(null? args) head]
+           [else (loop ((mpfr-eval emin emax sig) mpfr-sub head (gfl-val (car args)))
+                       (cdr args))])))
     (gfl-exponent) (gfl-bits)))
 
 (define (gfl* . args)

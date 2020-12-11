@@ -1,7 +1,7 @@
 #lang racket
 
 (require rackunit math/bigfloat)
-(require "../generic-flonum.rkt")
+(require "../main.rkt")
 
 (define (random-double)
   (define parts (make-list 4 (random (expt 2 16))))
