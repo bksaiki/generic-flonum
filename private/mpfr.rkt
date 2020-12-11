@@ -1,13 +1,15 @@
 #lang racket
 
 (require math/bigfloat)
-(provide (all-defined-out) (all-from-out math/bigfloat (submod "." hairy)))
+
+(provide (all-defined-out)
+         mpfr-set mpfr-fma mpfr-set-ebounds!)
 
 ;;; Isolate FFI code
 (module hairy racket/base
   (require ffi/unsafe math/private/bigfloat/mpfr)
   (provide mpfr-set mpfr-set-ebounds! mpfr-get-emin mpfr-get-emax
-           mpfr-fma mpfr-1ary-funs mpfr-2ary-funs)
+           mpfr-fma mpfr-0ary-funs mpfr-1ary-funs mpfr-2ary-funs)
 
   ;;; Additional MPFR functions
   (define mpfr-get-emin (get-mpfr-fun 'mpfr_get_emin (_fun -> _exp_t)))
@@ -17,6 +19,18 @@
 
   (define mpfr-subnormalize (get-mpfr-fun 'mpfr_subnormalize (_fun _mpfr-pointer _int _rnd_t -> _int)))
   (define mpfr-check-range (get-mpfr-fun 'mpfr_check_range (_fun _mpfr-pointer _int _rnd_t -> _int)))
+
+  (define-syntax-rule (mpfr-0ary-fun name mpfr-name)
+    (begin
+      (define fun (get-mpfr-fun mpfr-name (_fun _mpfr-pointer _rnd_t -> _int)))
+      (define (name)
+        (define r (bf 0))
+        (define t (fun r (bf-rounding-mode)))
+        (mpfr-subnormalize r t (bf-rounding-mode))
+        r)))
+
+  (define-syntax-rule (mpfr-0ary-funs [name mpfr-name] ...)
+    (begin (mpfr-0ary-fun name mpfr-name) ...))
 
   (define-syntax-rule (mpfr-1ary-fun name mpfr-name)
     (begin
@@ -62,9 +76,13 @@
       (mpfr-set-emax! emax)
       (values emin* emax*)))
 )
+;;; End FFI code
 
 (require (submod "." hairy))
-;;; End FFI code
+
+(mpfr-0ary-funs
+ [mpfr-const-pi 'mpfr_const_pi]
+ [mpfr-const-log2 'mpfr_const_log2])
 
 (mpfr-1ary-funs
  [mpfr-sqrt 'mpfr_sqrt]

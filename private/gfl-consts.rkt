@@ -1,6 +1,6 @@
 #lang racket
 
-(require (only-in "gfl.rkt" real->gfl)
+(require "gfl-mpfr.rkt"
          (for-syntax racket/base racket/syntax syntax/strip-context))
 
 ;;;;;;;;;;;;;;;; Constants ;;;;;;;;;;;;;;;;
@@ -22,8 +22,7 @@
  [0.gfl    0]
  [1.gfl    1])
 
-;; The following code is borrowed from racket/math
-
+;; The following code is from racket/math
 (define-syntax (req/prov-constants stx)
   (syntax-case stx ()
     [(_ collection force)
@@ -47,3 +46,4 @@
 (define-syntax-rule (apply0 x) (x))
 
 (req/prov-constants consts apply0)
+(req/prov-constants const-funs apply0)
