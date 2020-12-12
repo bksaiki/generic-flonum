@@ -2,8 +2,12 @@
 
 (require math/bigfloat "gfl-mpfr.rkt")
 
-(provide gfl-exponent gfl-bits
+(provide
   (contract-out
+   [gfl-exponent (parameter/c gfl-exponent/c)]
+   [gfl-bits (parameter/c gfl-bits/c)]
+   [gfl-rounding-mode (parameter/c (symbols 'nearest 'zero 'up 'down 'away))]
+
    [gfl ((or/c real? string?) . -> . gfl?)]
    [gfl? (any/c . -> . boolean?)]
 
@@ -14,6 +18,7 @@
    [ordinal->gfl (exact-integer? . -> . gfl?)]
    [gfl->ordinal (gfl? . -> . exact-integer?)]
    [gfl->string (gfl? . -> . string?)]
+   [gflcopy (gfl? . -> . gfl?)]
 
    [gflnan? (gfl? . -> . boolean?)]
    [gflinfinite? (gfl? . -> . boolean?)]
@@ -90,3 +95,25 @@
   (cond
    [(real? x) (real->gfl x)]
    [(string? x) (string->gfl x)]))
+
+(define gfl-exponent/c
+  (flat-contract-with-explanation
+    (λ (v)
+     (cond
+      [(< 0 v (gfl-bits)) #t]
+      [else
+       (λ (blame)
+        (raise-blame-error blame v
+          '(expected: "an exact integer between 0 and (gfl-bits), exclusive" given: "~e")
+            v))]))))
+
+(define gfl-bits/c
+  (flat-contract-with-explanation
+    (λ (v)
+     (cond
+      [(< (gfl-exponent) v) #t]
+      [else
+       (λ (blame)
+        (raise-blame-error blame v
+          '(expected: "an exact integer greater than (gfl-exponent)" given: "~e")
+            v))]))))

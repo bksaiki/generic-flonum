@@ -3,13 +3,23 @@
 (require math/bigfloat)
 
 (provide (all-defined-out)
-         mpfr-set mpfr-fma mpfr-set-ebounds!)
+         mpfr-set
+         mpfr-fma
+         mpfr-set-ebounds!
+         mpfr-rounding-mode)
 
 ;;; Isolate FFI code
 (module hairy racket/base
   (require ffi/unsafe math/private/bigfloat/mpfr)
   (provide mpfr-set mpfr-set-ebounds! mpfr-get-emin mpfr-get-emax
-           mpfr-fma mpfr-0ary-funs mpfr-1ary-funs mpfr-2ary-funs)
+           mpfr-fma mpfr-0ary-funs mpfr-1ary-funs mpfr-2ary-funs
+           mpfr-rounding-mode)
+
+  ;; Override _rnd_t type from bigfloat
+  (define _rnd_t (_enum '(nearest zero up down away)))
+
+  ;; Separate rounding mode parameter
+  (define mpfr-rounding-mode (make-parameter 'nearest))
 
   ;;; Additional MPFR functions
   (define mpfr-get-emin (get-mpfr-fun 'mpfr_get_emin (_fun -> _exp_t)))
@@ -25,8 +35,8 @@
       (define fun (get-mpfr-fun mpfr-name (_fun _mpfr-pointer _rnd_t -> _int)))
       (define (name)
         (define r (bf 0))
-        (define t (fun r (bf-rounding-mode)))
-        (mpfr-subnormalize r t (bf-rounding-mode))
+        (define t (fun r (mpfr-rounding-mode)))
+        (mpfr-subnormalize r t (mpfr-rounding-mode))
         r)))
 
   (define-syntax-rule (mpfr-0ary-funs [name mpfr-name] ...)
@@ -37,8 +47,8 @@
       (define fun (get-mpfr-fun mpfr-name (_fun _mpfr-pointer _mpfr-pointer _rnd_t -> _int)))
       (define (name x)
         (define r (bf 0))
-        (define t (fun r x (bf-rounding-mode)))
-        (mpfr-subnormalize r t (bf-rounding-mode))
+        (define t (fun r x (mpfr-rounding-mode)))
+        (mpfr-subnormalize r t (mpfr-rounding-mode))
         r)))
 
   (define-syntax-rule (mpfr-1ary-funs [name mpfr-name] ...)
@@ -49,8 +59,8 @@
       (define fun (get-mpfr-fun mpfr-name (_fun _mpfr-pointer _mpfr-pointer _mpfr-pointer _rnd_t -> _int)))
       (define (name x y)
         (define r (bf 0))
-        (define t (fun r x y (bf-rounding-mode)))
-        (mpfr-subnormalize r t (bf-rounding-mode))
+        (define t (fun r x y (mpfr-rounding-mode)))
+        (mpfr-subnormalize r t (mpfr-rounding-mode))
         r)))
 
   (define-syntax-rule (mpfr-2ary-funs [name mpfr-name] ...)
@@ -59,14 +69,14 @@
   (define (mpfr-fma x y z)
     (define fun (get-mpfr-fun 'mpfr_fma (_fun _mpfr-pointer _mpfr-pointer _mpfr-pointer _mpfr-pointer _rnd_t -> _int)))
     (define r (bf 0))
-    (define t (fun r x y z (bf-rounding-mode)))
-    (mpfr-subnormalize r t (bf-rounding-mode))
+    (define t (fun r x y z (mpfr-rounding-mode)))
+    (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
   (define (mpfr-set x)
     (define v (if (bigfloat? x) (bfcopy x) (bf x)))
-    (mpfr-check-range v 0 (bf-rounding-mode))
-    (mpfr-subnormalize v 0 (bf-rounding-mode))
+    (mpfr-check-range v 0 (mpfr-rounding-mode))
+    (mpfr-subnormalize v 0 (mpfr-rounding-mode))
     v)
 
   (define (mpfr-set-ebounds! emin emax)
