@@ -19,8 +19,27 @@
  [+inf.gfl +inf.0]
  [-inf.gfl -inf.0]
  [+nan.gfl +nan.0]
+ [-10.gfl  -10]
+ [-9.gfl   -9]
+ [-8.gfl   -8]
+ [-7.gfl   -7]
+ [-6.gfl   -6]
+ [-5.gfl   -5]
+ [-4.gfl   -4]
+ [-3.gfl   -3]
+ [-2.gfl   -2]
+ [-1.gfl   -1]
  [0.gfl    0]
- [1.gfl    1])
+ [1.gfl    1]
+ [2.gfl    2]
+ [3.gfl    3]
+ [4.gfl    4]
+ [5.gfl    5]
+ [6.gfl    6]
+ [7.gfl    7]
+ [8.gfl    8]
+ [9.gfl    9]
+ [10.gfl   10])
 
 ;; The following code is from racket/math
 (define-syntax (req/prov-constants stx)

@@ -104,7 +104,8 @@
  [gflinfinite? bfinfinite?]
  [gflzero? bfzero?]
  [gflnegative? bfnegative?]
- [gflpositive? bfpositive?])
+ [gflpositive? bfpositive?]
+ [gflinteger? bfinteger?])
 
 ;;;;;;;;;;;;;;;; Comparators ;;;;;;;;;;;;;;;;
 
@@ -292,16 +293,14 @@
     (define (name)
       (define sig (- (gfl-bits) (gfl-exponent)))
       (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-      (gflonum ((mpfr-eval emin emax sig) mpfr-fun) (gfl-exponent) (gfl-bits)))
-    (provide name)
-    (begin-for-syntax (set! const-funs (cons #'name const-funs)))))
+      (gflonum ((mpfr-eval emin emax sig) mpfr-fun) (gfl-exponent) (gfl-bits)))))
 
 (define-syntax-rule (gfl-0ary-funs [name mpfr-fun] ...)
   (begin (gfl-0ary-fun name mpfr-fun) ...))
 
 (gfl-0ary-funs
- [pi.gfl mpfr-const-pi]
- [ln2.gfl mpfr-const-log2])
+ [gflpi mpfr-const-pi]
+ [gflln2 mpfr-const-log2])
 
 (define-syntax-rule (gfl-0ary-const name val)
   (begin
@@ -313,14 +312,23 @@
   (begin (gfl-0ary-const name val) ...))
 
 (gfl-0ary-consts
+ ; C library math constants
  [e.gfl (gflexp (real->gfl 1))]
  [log2e.gfl (gfllog2 (gflexp (real->gfl 1)))]
  [log10e.gfl (gfllog10 (gflexp (real->gfl 1)))]
+ [ln2.gfl (gflln2)]
  [ln10.gfl (gfllog (real->gfl 10))]
+ [pi.gfl (gflpi)]
  [pi/2.gfl (gflasin (real->gfl 1))]
  [pi/4.gfl (gflatan2 (real->gfl +inf.0) (real->gfl +inf.0))]
  [1/pi.gfl (gfl/ (real->gfl 1) (gflatan2 (real->gfl 0) (real->gfl -1)))]
  [2/pi.gfl (gfl/ (real->gfl 2) (gflatan2 (real->gfl 0) (real->gfl -1)))]
  [2/sqrtpi.gfl (gfl/ (real->gfl 2) (gflsqrt (gflatan2 (real->gfl 0) (real->gfl -1))))]
  [sqrt2.gfl (gflsqrt (real->gfl 2))]
- [sqrt1/2.gfl (gflsqrt (real->gfl 1/2))])
+ [sqrt1/2.gfl (gflsqrt (real->gfl 1/2))]
+
+ ; Bigfloat constants
+ [+max.gfl (ordinal->gfl (- (gfl->ordinal (real->gfl +inf.0)) 1))]
+ [+min.gfl (ordinal->gfl 1)]
+ [-max.gfl (ordinal->gfl (- 1 (gfl->ordinal (real->gfl +inf.0))))]
+ [-min.gfl (ordinal->gfl -1)])

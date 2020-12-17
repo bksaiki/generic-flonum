@@ -25,6 +25,7 @@
    [gflzero? (gfl? . -> . boolean?)]
    [gflnegative? (gfl? . -> . boolean?)]
    [gflpositive? (gfl? . -> . boolean?)]
+   [gflinteger? (gfl? . -> . boolean?)]
    [gflsubnormal? (gfl? . -> . boolean?)]
 
    [gfl= (gfl? gfl? ... . -> . boolean?)]
