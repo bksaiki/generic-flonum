@@ -148,10 +148,10 @@
   (begin (gfl-1ary-fun name mpfr-fun) ...))
 
 (gfl-1ary-funs
+ [gflsqr mpfr-sqr]
  [gflsqrt mpfr-sqrt]
  [gfl1/sqrt mpfr-rec-sqrt]
  [gflcbrt mpfr-cbrt]
- [gflneg mpfr-neg]
  [gflabs mpfr-abs]
  [gfllog mpfr-log]
  [gfllog2 mpfr-log2]
@@ -324,9 +324,9 @@
 ;;;;;;;;;;;;;;;;;;; Miscellaneous operators ;;;;;;;;;;;;;;;;
 
 (define (gflsgn x)
-  (cond [(gflnegative? x) -1]
-        [(gflpositive? x) 1]
-        [else 0]))
+  (cond [(gflnegative? x) (real->gfl -1)]
+        [(gflpositive? x) (real->gfl 1)]
+        [else (real->gfl 0)]))
 
 (define (gflsubnormal? x)
   (cond

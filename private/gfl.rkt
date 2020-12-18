@@ -40,7 +40,7 @@
    [gfl/ (gfl? gfl? ... . -> . gfl?)]
    
    [gflsgn (gfl? . -> . boolean?)]
-   [gflneg (gfl? . -> . gfl?)]
+   [gflsqr (gfl? . -> . boolean?)]
    [gflsqrt (gfl? . -> . gfl?)]
    [gfl1/sqrt (gfl . -> . gfl?)]
    [gflcbrt (gfl? . -> . gfl?)]

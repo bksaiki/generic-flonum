@@ -130,6 +130,7 @@
  [mpfr-const-log2 'mpfr_const_log2])
 
 (mpfr-1ary-funs
+ [mpfr-sqr 'mpfr_sqr]
  [mpfr-sqrt 'mpfr_sqrt]
  [mpfr-rec-sqrt 'mpfr_rec_sqrt]
  [mpfr-cbrt 'mpfr_cbrt]
