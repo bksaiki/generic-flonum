@@ -42,6 +42,7 @@
    [gflsgn (gfl? . -> . boolean?)]
    [gflneg (gfl? . -> . gfl?)]
    [gflsqrt (gfl? . -> . gfl?)]
+   [gfl1/sqrt (gfl . -> . gfl?)]
    [gflcbrt (gfl? . -> . gfl?)]
    [gflabs (gfl? . -> . gfl?)]
    [gfllog (gfl? . -> . gfl?)]
@@ -70,7 +71,18 @@
    [gflacosh (gfl? . -> . gfl?)]
    [gflasinh (gfl? . -> . gfl?)]
    [gflatanh (gfl? . -> . gfl?)]
+   [gfldigamma (gfl? . -> . gfl?)]
+   [gfleint (gfl? . -> . gfl?)]
+   [gflli2 (gfl? . -> . gfl?)]
+   [gflbeta (gfl? . -> . gfl?)]
+   [gflzeta (gfl? . -> . gfl?)]
+   [gflj0 (gfl? . -> . gfl?)]
+   [gflj1 (gfl? . -> . gfl?)]
+   [gfly0 (gfl? . -> . gfl?)]
+   [gfly1 (gfl? . -> . gfl?)]
+   [gflai (gfl? . -> . gfl?)]
 
+   [gflagm (gfl? gfl? . -> . gfl?)]
    [gflatan2 (gfl? gfl? . -> . gfl?)]
    [gflceiling (gfl? gfl? . -> . gfl?)]
    [gflcopysign (gfl? gfl? . -> . gfl?)]
@@ -90,7 +102,12 @@
    [gflround (gfl? gfl? . -> . gfl?)]
    [gfltruncate (gfl? gfl? . -> . gfl?)]
 
-   [gflfma (gfl? gfl? gfl? . -> . gfl?)]))
+   [gflfma (gfl? gfl? gfl? . -> . gfl?)]
+   [gflsin+cos (gfl? . -> . (values gfl? gfl?))]
+   [gflsinh+cosh (gfl? . -> . (values gfl? gfl?))]
+   [gflroot (gfl? natural? . -> . gfl?)]
+   [gfljn (gfl-long/c gfl? . -> . gfl?)]
+   [gflyn (gfl-long/c gfl? . -> . gfl?)]))
 
 (define (gfl x)
   (cond
@@ -118,3 +135,15 @@
         (raise-blame-error blame v
           '(expected: "an exact integer greater than (gfl-exponent)" given: "~e")
             v))]))))
+
+(define gfl-long/c
+  (flat-contract-with-explanation
+    (λ (v)
+     (cond
+      [(and exact-integer? (< -2147483648 v 2147483648)) #t]
+      [else
+       (λ (blame)
+        (raise-blame-error blame v
+          '(expected: "an exact integer between -2147483648 and 2147483648" given: "~e")
+            v))]))
+    #:name 'gfl-long/c))

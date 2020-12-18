@@ -3,17 +3,16 @@
 (require math/bigfloat)
 
 (provide (all-defined-out)
-         mpfr-set
-         mpfr-fma
-         mpfr-set-ebounds!
-         mpfr-rounding-mode)
+         (all-from-out (submod "." hairy)))
 
 ;;; Isolate FFI code
 (module hairy racket/base
   (require ffi/unsafe math/private/bigfloat/mpfr)
   (provide mpfr-set mpfr-set-ebounds! mpfr-get-emin mpfr-get-emax
-           mpfr-fma mpfr-0ary-funs mpfr-1ary-funs mpfr-2ary-funs
-           mpfr-rounding-mode)
+           mpfr-0ary-funs mpfr-1ary-funs mpfr-2ary-funs mpfr-1ary-2val-funs
+           mpfr-rounding-mode
+           mpfr-fma mpfr-root
+           mpfr-jn mpfr-yn)
 
   ;; Override _rnd_t type from bigfloat
   (define _rnd_t (_enum '(nearest zero up down away)))
@@ -66,10 +65,46 @@
   (define-syntax-rule (mpfr-2ary-funs [name mpfr-name] ...)
     (begin (mpfr-2ary-fun name mpfr-name) ...))
 
+  (define-syntax-rule (mpfr-1ary-2val-fun name mpfr-name)
+    (begin
+      (define fun (get-mpfr-fun 'mpfr_sin_cos (_fun _mpfr-pointer _mpfr-pointer _mpfr-pointer _rnd_t -> _int)))
+      (define (name x)
+        (define r0 (bf 0))
+        (define r1 (bf 1))
+        (define t (fun r0 r1 x (mpfr-rounding-mode)))
+        (define-values (c s) (quotient/remainder t 4))
+        (mpfr-subnormalize r0 s (mpfr-rounding-mode))
+        (mpfr-subnormalize r1 c (mpfr-rounding-mode))
+        (values r0 r1))))
+
+  (define-syntax-rule (mpfr-1ary-2val-funs [name mpfr-name] ...)
+    (begin (mpfr-1ary-2val-fun name mpfr-name) ...))
+
   (define (mpfr-fma x y z)
     (define fun (get-mpfr-fun 'mpfr_fma (_fun _mpfr-pointer _mpfr-pointer _mpfr-pointer _mpfr-pointer _rnd_t -> _int)))
     (define r (bf 0))
     (define t (fun r x y z (mpfr-rounding-mode)))
+    (mpfr-subnormalize r t (mpfr-rounding-mode))
+    r)
+
+  (define (mpfr-root x n)
+    (define fun (get-mpfr-fun 'mpfr_root (_fun _mpfr-pointer _mpfr-pointer _uint _rnd_t -> _int)))
+    (define r (bf 0))
+    (define t (fun r x n (mpfr-rounding-mode)))
+    (mpfr-subnormalize r t (mpfr-rounding-mode))
+    r)
+
+  (define (mpfr-jn n x)
+    (define fun (get-mpfr-fun 'mpfr_jn (_fun _mpfr-pointer _long _mpfr-pointer _rnd_t -> _int)))
+    (define r (bf 0))
+    (define t (fun r n x (mpfr-rounding-mode)))
+    (mpfr-subnormalize r t (mpfr-rounding-mode))
+    r)
+
+  (define (mpfr-yn n x)
+    (define fun (get-mpfr-fun 'mpfr_yn (_fun _mpfr-pointer _long _mpfr-pointer _rnd_t -> _int)))
+    (define r (bf 0))
+    (define t (fun r n x (mpfr-rounding-mode)))
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
@@ -96,6 +131,7 @@
 
 (mpfr-1ary-funs
  [mpfr-sqrt 'mpfr_sqrt]
+ [mpfr-rec-sqrt 'mpfr_rec_sqrt]
  [mpfr-cbrt 'mpfr_cbrt]
  [mpfr-neg 'mpfr_neg]
  [mpfr-abs 'mpfr_abs]
@@ -124,13 +160,24 @@
  [mpfr-coth 'mpfr_coth]
  [mpfr-acosh 'mpfr_acosh]
  [mpfr-asinh 'mpfr_asinh]
- [mpfr-atanh 'mpfr_atanh])
+ [mpfr-atanh 'mpfr_atanh]
+ [mpfr-digamma 'mpfr_digamma]
+ [mpfr-eint 'mpfr_eint]
+ [mpfr-li2 'mpfr_li2]
+ [mpfr-beta 'mpfr_beta]
+ [mpfr-zeta 'mpfr_zeta]
+ [mpfr-j0 'mpfr_j0]
+ [mpfr-j1 'mpfr_j1]
+ [mpfr-y0 'mpfr_y0]
+ [mpfr-y1 'mpfr_y1]
+ [mpfr-ai 'mpfr_ai])
 
 (mpfr-2ary-funs
  [mpfr-add 'mpfr_add]
  [mpfr-sub 'mpfr_sub]
  [mpfr-mul 'mpfr_mul]
  [mpfr-div 'mpfr_div]
+ [mpfr-agm 'mpfr_agm]
  [mpfr-atan2 'mpfr_atan2]
  [mpfr-copysign 'mpfr-copysign]
  [mpfr-ceil 'mpfr_ceil]
@@ -149,6 +196,10 @@
  [mpfr-rint 'mpfr_rint]
  [mpfr-round 'mpfr_round]
  [mpfr-trunc 'mpfr_trunc])
+
+(mpfr-1ary-2val-funs
+ [mpfr-sin-cos 'mpfr_sin_cos]
+ [mpfr-sinh-cosh 'mpfr_sinh-cosh])
   
 (define ((mpfr-eval emin emax sig) proc . args)
   (parameterize ([bf-precision sig])

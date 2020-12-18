@@ -19,6 +19,9 @@
          gfl-
          gfl*
          gfl/
+         gflroot
+         gfljn
+         gflyn
          gflfma
          gflsgn
          gflsubnormal?)
@@ -138,7 +141,7 @@
       (define sig (- (gfl-bits) (gfl-exponent)))
       (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
       (gflonum ((mpfr-eval emin emax sig) mpfr-fun (gflonum-val x))
-          (gfl-exponent) (gfl-bits)))
+               (gfl-exponent) (gfl-bits)))
     (provide name)))
 
 (define-syntax-rule (gfl-1ary-funs [name mpfr-fun] ...)
@@ -146,6 +149,7 @@
 
 (gfl-1ary-funs
  [gflsqrt mpfr-sqrt]
+ [gfl1/sqrt mpfr-rec-sqrt]
  [gflcbrt mpfr-cbrt]
  [gflneg mpfr-neg]
  [gflabs mpfr-abs]
@@ -174,7 +178,38 @@
  [gflcoth mpfr-coth]
  [gflacosh mpfr-acosh]
  [gflasinh mpfr-asinh]
- [gflatanh mpfr-atanh])
+ [gflatanh mpfr-atanh]
+ [gfldigamma mpfr-digamma]
+ [gfleint mpfr-eint]
+ [gflli2 mpfr-li2]
+ [gflbeta mpfr-beta]
+ [gflzeta mpfr-zeta]
+ [gflj0 mpfr-j0]
+ [gflj1 mpfr-j1]
+ [gfly0 mpfr-y0]
+ [gfly1 mpfr-y1]
+ [gflai mpfr-ai])
+
+(define-syntax-rule (gfl-1ary-2val-fun name mpfr-fun)
+  (begin
+    (define (name x)
+      (define sig (- (gfl-bits) (gfl-exponent)))
+      (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+      (parameterize ([bf-precision sig])
+        (define-values (emin* emax*) (mpfr-set-ebounds! emin emax))
+        (define-values (r0 r1) (mpfr-fun (gflonum-val x)))
+        (mpfr-set-ebounds! emin* emax*)
+        (values
+          (gflonum r0 (gfl-exponent) (gfl-bits))
+          (gflonum r1 (gfl-exponent) (gfl-bits)))))
+    (provide name)))
+
+(define-syntax-rule (gfl-1ary-2val-funs [name mpfr-fun] ...)
+  (begin (gfl-1ary-2val-fun name mpfr-fun) ...))
+
+(gfl-1ary-2val-funs
+ [gflsin+cos mpfr-sin-cos]
+ [gflsinh+cosh mpfr-sinh-cosh])
 
 ;;;;;;;;;;;;;;;; Binary operators ;;;;;;;;;;;;;;;;
 
@@ -184,13 +219,14 @@
       (define sig (- (gfl-bits) (gfl-exponent)))
       (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
       (gflonum ((mpfr-eval emin emax sig) mpfr-fun (gflonum-val x) (gflonum-val y))
-          (gfl-exponent) (gfl-bits)))
+               (gfl-exponent) (gfl-bits)))
     (provide name)))
 
 (define-syntax-rule (gfl-2ary-funs [name mpfr-fun] ...)
   (begin (gfl-2ary-fun name mpfr-fun) ...))
 
 (gfl-2ary-funs
+ [gflagm mpfr-agm]
  [gflatan2 mpfr-atan2]
  [gflceiling mpfr-ceil]
  [gflcopysign mpfr-copysign]
@@ -209,6 +245,24 @@
  [gflrint mpfr-rint]
  [gflround mpfr-round]
  [gfltruncate mpfr-trunc])
+
+(define (gflroot x n)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum ((mpfr-eval emin emax sig) mpfr-root (gflonum-val x) n)
+           (gfl-exponent) (gfl-bits)))
+
+(define (gfljn n x)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum ((mpfr-eval emin emax sig) mpfr-jn n (gflonum-val x))
+           (gfl-exponent) (gfl-bits)))
+
+(define (gflyn n x)
+  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
+  (gflonum ((mpfr-eval emin emax sig) mpfr-yn n (gflonum-val x))
+           (gfl-exponent) (gfl-bits)))
 
 ;;;;;;;;;;;;;;;; Ternary operators ;;;;;;;;;;;;;;;;
 
