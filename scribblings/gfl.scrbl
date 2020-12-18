@@ -12,7 +12,8 @@
 
 @defmodule[generic-flonum]
 
-This library provides an alternate interface to @hyperlink["http://mpfr.org" "MPFR"] (compared to @bigfloat-link), emphasizing the emulation of unusual floating-point types such as @italic{binary128}, @italic{binary16}, @italic{bfloat16}, etc.
+This library provides an alternate interface to @hyperlink["http://mpfr.org" "MPFR"] (compared to @bigfloat-link), emphasizing the emulation of floating-point
+formats such as @italic{binary128}, @italic{binary16}, @italic{bfloat16}, etc.
 
 @section{Motivations}
 
@@ -20,9 +21,13 @@ While the @bigfloat-link interface is sufficient for most high-precision computi
 @itemlist[#:style 'ordered
           @item{properly emulate subnormal values}
           @item{allow the exponent range to be changed}]
-If the user's intent is to compute, say @racket[(exp -10)] and @racket[(exp 20)], to find a close estimate of their real values, then neither of the problems above matter. However, if the user wanted to know their properly rounded values in half-precision, then both problems matter.
+If the user's intent is to compute, say @racket[(exp -10)] and @racket[(exp 20)], to find a close estimate of their real values, then neither of the problems above matter.
+However, if the user wanted to know their properly rounded values in half-precision, then @bigfloat-link becomes insufficient.
 
-At half-precision, @racket[(exp -10)] and @racket[(exp 20)] evaluate to @racket[4.5419e-5] and @racket[+inf.0], respectively. On the other hand, evaluating @racket[(bfexp (bf -10))] and @racket[(bfexp (bf -10))] with @racket[(bf-precision 11)] returns @racket[(bf "4.5389e-5")] and @racket[(bf "#e4.8523e8")], respectively. While the latter results are certainly more accurate, they do not reflect the proper behavior for overflow and subnormal values.
+At half-precision, @racket[(exp -10)] and @racket[(exp 20)] evaluate to @racket[4.5419e-5] and @racket[+inf.0], respectively. On the other hand, evaluating @racket[(bfexp (bf -10))]
+and @racket[(bfexp (bf -10))] with @racket[(bf-precision 11)] returns @racket[(bf "4.5389e-5")] and @racket[(bf "#e4.8523e8")]. While the latter results are certainly
+more accurate when comparing to a high precision result, they do not reflect proper behavior for half-precision. The standard bigfloat library does not subnormalize the first result
+ (no subnormalizing capabilities), nor does it recognize the overflow in the second result (fixed exponent range).
 
 @section{Type and Constructors}
 
@@ -89,7 +94,49 @@ same time as their bigfloat counterparts, although this behavior may change in t
 @defparam[gfl-rounding-mode rm (symbols 'nearest 'zero 'up 'down 'away)
           #:value 'nearest]{
   A parameter that determines the mode used to round the result of most functions in this library.
-  Note that @bigfloat-link accepts all values but the last for @racket[(bf-rounding-mode)].
+  Note that @racket[(bf-rounding-mode)] accepts all of these except @racket['away].
+}
+
+@section{Constants}
+
+@deftogether[(@defthing[pi.gfl gfl?]
+              @defthing[ln2.gfl gfl?])]{
+  Approximations of π and log(2).
+}
+
+@deftogether[(@defthing[+nan.gfl gfl?]
+              @defthing[+inf.gfl gfl?]
+              @defthing[+max.gfl gfl?]
+              @defthing[+min.gfl gfl?]
+              @defthing[0.gfl gfl?]
+              @defthing[-min.gfl gfl?]
+              @defthing[-max.gfl gfl?]
+              @defthing[-inf.gfl gfl?])]{
+ Constants corresponding to @racket[+nan.0], @racket[+inf.0], @racket[+max.0], @racket[+min.0],
+ @racket[0.0], @racket[-min.0], @racket[-max.0], and @racket[-inf.0].
+}
+
+@deftogether[(@defthing[10.gfl gfl?]
+              @defthing[9.gfl gfl?]
+              @defthing[8.gfl gfl?]
+              @defthing[7.gfl gfl?]
+              @defthing[6.gfl gfl?]
+              @defthing[5.gfl gfl?]
+              @defthing[4.gfl gfl?]
+              @defthing[3.gfl gfl?]
+              @defthing[2.gfl gfl?]
+              @defthing[1.gfl gfl?]
+              @defthing[-1.gfl gfl?]
+              @defthing[-2.gfl gfl?]
+              @defthing[-3.gfl gfl?]
+              @defthing[-4.gfl gfl?]
+              @defthing[-5.gfl gfl?]
+              @defthing[-6.gfl gfl?]
+              @defthing[-7.gfl gfl?]
+              @defthing[-8.gfl gfl?]
+              @defthing[-9.gfl gfl?]
+              @defthing[-10.gfl gfl?])]{
+  More constants.
 }
 
 @section{Predicates}
@@ -130,6 +177,28 @@ same time as their bigfloat counterparts, although this behavior may change in t
   Standard arithmetic functions, corresponding to @racket[+], @racket[-], @racket[*], @racket[/],
   @racket[sqr], @racket[abs], @racket[sgn]. Similar to @racket[bf/], division by zero returns
   @racket[+nan.gfl].
+}
+
+@deftogether[(@defproc[(gflmax [x gfl?] ...) gfl?]
+              @defproc[(gflmin [x gfl?] ...) gfl?])]{
+  Returns the maximum and minimum of their arguments, respectively. When given no arguments, @racket[bfmin]
+  returns @racket[+inf.gfl], and @racket[bfmax] returns @racket[-inf.gfl].
+}
+
+@deftogether[(@defproc[(gflmod [x gfl?] [y gfl?]) gfl?]
+              @defproc[(gflremainder [x gfl?] [y gfl?]) gfl?])]{
+  Returns the modulo and remainder of @racket[x] and @racket[y].
+}
+
+@defproc[(gfldim [x gfl?] [y gfl?])
+          gfl?]{
+  Returns @racket[(gfl- x y)] if @racket[(gfl> x y)], and @racket[0.gfl] otherwise. Equivalent to
+  @racket[(gflmax (gfl- x y) 0.gfl)].
+}
+
+@defproc[(gflagm [x gfl?] [y gfl?])
+          gfl?]{
+  Returns the arithmetic-geometric mean of @racket[x] and @racket[y].
 }
 
 @deftogether[(@defproc[(gflsqrt [x gfl?]) gfl?]
@@ -199,4 +268,83 @@ same time as their bigfloat counterparts, although this behavior may change in t
               @defproc[(gflsech [x gfl?]) gfl?]
               @defproc[(gflcoth [x gfl?]) gfl?])]{
   Standard reciprocal hyperbolic functions.
+}
+
+@defproc[(gflsin+cos [x gfl?])
+          (values gfl? gfl?)]{
+  Simultaneously compute the sine and cosine of @racket[x].
+}
+
+@defproc[(gflsinh+cosh [x gfl?])
+          (values gfl? gfl?)]{
+  Simultaneously compute the hyperbolic sine and cosine of @racket[x].
+}
+
+@defproc[(gflfma [x gfl?] [y gfl?] [z gfl?])
+          gfl?]{
+  Compute @racket[(gfl+ (gfl* x y) z)] without intermediate overflow or rounding.
+}
+
+@deftogether[(@defproc[(gflgamma [x gfl?]) gfl?]
+              @defproc[(gfllgamma [x gfl?]) gfl?]
+              @defproc[(gfldigamma [x gfl?]) gfl?])]{
+  Compute the gamma, log-gamma, and digamma function.
+}
+
+@deftogether[(@defproc[(gflerf [x gfl?]) gfl?]
+              @defproc[(gflerfc [x gfl?]) gfl?])]{
+  Compute the error function and complementary error function.
+}
+
+@defproc[(gfleint [x gfl?])
+          gfl?]{
+  Returns the exponetial integral of @racket[x].
+}
+
+@defproc[(gflli2 [x gfl?])
+          gfl?]{
+  Returns the dilogarithm of @racket[x].
+}
+
+@defproc[(gflzeta [x gfl?])
+          gfl?]{
+  Computes the Riemann zeta function.
+}
+
+@deftogether[(@defproc[(gflj0 [x gfl?]) gfl?]
+              @defproc[(gflj1 [x gfl?]) gfl?]
+              @defproc[(gfljn [n exact-integer?] [x gfl?]) gfl?]
+              @defproc[(gfly0 [x gfl?]) gfl?]
+              @defproc[(gfly1 [x gfl?]) gfl?]
+              @defproc[(gflyn [n exact-integer?] [x gfl?]) gfl?])]{
+  Compute the Bessel functions. The first three correspond to Bessel functions of
+  the first kind of order 0, 1, and @racket[n], while the other three correspond to
+  Bessel functions of the second kind of order 0, 1, and @racket[n].
+}
+
+@defproc[(gflai [x gfl?])
+          gfl?]{
+  Computes the Airy function of the first kind.
+}
+
+@section{Rounding}
+
+@deftogether[(@defproc[(gflceiling [x gfl?]) gfl?]
+              @defproc[(gflfloor [x gfl?]) gfl?]
+              @defproc[(gflround [x gfl?]) gfl?]
+              @defproc[(gfltruncate [x gfl?]) gfl?])]{
+  Like @racket[ceiling], @racket[floor], @racket[round], and @racket[truncate], but
+  for generic-flonums.
+}
+
+@defproc[(gflrint [x gfl?])
+          gfl?]{
+  Rounds @racket[x] to the nearest integer in the direction specified by @racket[(gfl-rounding-mode)].
+}
+
+@section{Miscellaneous}
+
+@defproc[(gflcopysign [x gfl?] [y gfl?])
+          gfl?]{
+  Returns a generic-flonum with the magnitude of @racket[x] and the sign of @racket[y].
 }
