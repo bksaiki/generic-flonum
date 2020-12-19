@@ -39,8 +39,8 @@
    [gfl* (gfl? ... . -> . gfl?)]
    [gfl/ (gfl? gfl? ... . -> . gfl?)]
    
-   [gflsgn (gfl? . -> . boolean?)]
-   [gflsqr (gfl? . -> . boolean?)]
+   [gflsgn (gfl? . -> . gfl?)]
+   [gflsqr (gfl? . -> . gfl?)]
    [gflsqrt (gfl? . -> . gfl?)]
    [gfl1/sqrt (gfl . -> . gfl?)]
    [gflcbrt (gfl? . -> . gfl?)]
@@ -107,7 +107,13 @@
    [gflsinh+cosh (gfl? . -> . (values gfl? gfl?))]
    [gflroot (gfl? natural? . -> . gfl?)]
    [gfljn (gfl-long/c gfl? . -> . gfl?)]
-   [gflyn (gfl-long/c gfl? . -> . gfl?)]))
+   [gflyn (gfl-long/c gfl? . -> . gfl?)]
+
+   [gfls-between (gfl? gfl? . -> . exact-integer?)]
+   [gflnext (gfl? . -> . gfl?)]
+   [gflprev (gfl? . ->  . gfl?)]
+   [gflstep (gfl? exact-integer? . -> . gfl?)]))
+
 
 (define (gfl x)
   (cond

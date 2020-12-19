@@ -12,7 +12,8 @@
            mpfr-0ary-funs mpfr-1ary-funs mpfr-2ary-funs mpfr-1ary-2val-funs
            mpfr-rounding-mode
            mpfr-fma mpfr-root
-           mpfr-jn mpfr-yn)
+           mpfr-jn mpfr-yn
+           mpfr-sum)
 
   ;; Override _rnd_t type from bigfloat
   (define _rnd_t (_enum '(nearest zero up down away)))
@@ -108,6 +109,13 @@
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
+  (define (mpfr-sum xs)
+    (define fun (get-mpfr-fun 'mpfr_sum (_fun _mpfr-pointer (_list i _mpfr-pointer) _ulong _rnd_t -> _int)))
+    (define r (bf 0))
+    (define t (fun r xs (length xs) (mpfr-rounding-mode)))
+    (mpfr-subnormalize r t (mpfr-rounding-mode))
+    r)
+
   (define (mpfr-set x)
     (define v (if (bigfloat? x) (bfcopy x) (bf x)))
     (mpfr-check-range v 0 (mpfr-rounding-mode))
@@ -127,7 +135,9 @@
 
 (mpfr-0ary-funs
  [mpfr-const-pi 'mpfr_const_pi]
- [mpfr-const-log2 'mpfr_const_log2])
+ [mpfr-const-log2 'mpfr_const_log2]
+ [mpfr-const-euler 'mpfr_const_euler]
+ [mpfr-const-catalan 'mpfr_const_catalan])
 
 (mpfr-1ary-funs
  [mpfr-sqr 'mpfr_sqr]

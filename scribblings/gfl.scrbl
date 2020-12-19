@@ -7,7 +7,7 @@
 
 @(define bigfloat-link (hyperlink "http://docs.racket-lang.org/math/bigfloat.html" "math/bigfloat"))
 
-@title{generic-flonum}
+@title{Generic Flonums}
 @author{Brett Saiki}
 
 @defmodule[generic-flonum]
@@ -100,8 +100,11 @@ same time as their bigfloat counterparts, although this behavior may change in t
 @section{Constants}
 
 @deftogether[(@defthing[pi.gfl gfl?]
-              @defthing[ln2.gfl gfl?])]{
-  Approximations of π and log(2).
+              @defthing[phi.gfl gfl?]
+              @defthing[gamma.gfl gfl?]
+              @defthing[catalan.gfl gfl?]
+              @defthing[log2.gfl gfl?])]{
+  Approximations of π, φ, γ, G, and log(2).
 }
 
 @deftogether[(@defthing[+nan.gfl gfl?]
@@ -177,6 +180,9 @@ same time as their bigfloat counterparts, although this behavior may change in t
   Standard arithmetic functions, corresponding to @racket[+], @racket[-], @racket[*], @racket[/],
   @racket[sqr], @racket[abs], @racket[sgn]. Similar to @racket[bf/], division by zero returns
   @racket[+nan.gfl].
+
+  When giving more than two arguments, @racket[gfl+] and @racket[gfl-] compute the answer without
+  any intermediate rounding.
 }
 
 @deftogether[(@defproc[(gflmax [x gfl?] ...) gfl?]
@@ -347,4 +353,12 @@ same time as their bigfloat counterparts, although this behavior may change in t
 @defproc[(gflcopysign [x gfl?] [y gfl?])
           gfl?]{
   Returns a generic-flonum with the magnitude of @racket[x] and the sign of @racket[y].
+}
+
+@deftogether[(@defproc[(gfls-between [x gfl?] [y gfl?]) gfl?]
+              @defproc[(gflnext [x gfl?]) gfl?]
+              @defproc[(gflprev [x gfl?]) gfl?]
+              @defproc[(gflstep [x gfl?] [n exact-integer?]) gfl?])]{
+  Like @racket[flonums-between], @racket[flnext], @racket[flprev], and @racket[flstep], but for
+  generic-flonums.
 }

@@ -24,7 +24,11 @@
          gflyn
          gflfma
          gflsgn
-         gflsubnormal?)
+         gflsubnormal?
+         gfls-between
+         gflnext
+         gflprev
+         gflstep)
 
 ;;;;;;;;;;;; Parameters / Structs ;;;;;;;;;;;;   
 
@@ -275,51 +279,66 @@
 
 ;;;;;;;;;;;;;;;;;;; Variadic operators ;;;;;;;;;;;;;;;;
 
+(define (mpfrv+ emin emax sig . xs)
+  (cond
+   [(null? xs) 0.bf]
+   [else
+    (define xs1 (cdr xs))
+     (cond
+      [(null? xs1) (car xs)]
+      [else
+       (define xs2 (cdr xs1))
+       (cond 
+        [(null? xs2) ((mpfr-eval emin emax sig) mpfr-add (car xs) (car xs1))]
+        [else ((mpfr-eval emin emax sig) mpfr-sum xs)])])]))
+
+(define (mpfrv- emin emax sig x . xs)
+  (cond
+   [(null? xs) (mpfr-neg x)]
+   [(null? (cdr xs)) ((mpfr-eval emin emax sig) mpfr-sub x (car xs))]
+   [else (mpfr-neg (apply mpfrv+ emin emax sig (mpfr-neg x) xs))]))
+
+(define (mpfrv* emin emax sig . xs)
+  (cond
+   [(null? xs) 1.bf]
+   [else
+    (let loop ([x (car xs)] [xs (cdr xs)])
+      (cond
+       [(null? xs) x]
+       [else (loop ((mpfr-eval emin emax sig) mpfr-mul x (car xs)) (cdr xs))]))]))
+
+(define (mpfrv/ emin emax sig x . xs)
+  (cond
+   [(null? xs) ((mpfr-eval emin emax sig) mpfr-div 1.bf x)]
+   [else
+    (let loop ([x (car xs)] [xs (cdr xs)])
+      (cond
+       [(null? xs) x]
+       [else (loop ((mpfr-eval emin emax sig) mpfr-div x (car xs)) (cdr xs))]))]))
+
 (define (gfl+ . args)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum 
-    (let loop ([args (reverse args)])
-      (cond
-        [(null? args) 0.bf]
-        [(= (length args) 1) (gflonum-val (car args))]
-        [else ((mpfr-eval emin emax sig) mpfr-add (gflonum-val (car args)) (loop (cdr args)))]))
-    (gfl-exponent) (gfl-bits)))
+  (gflonum (apply mpfrv+ emin emax sig (map gflonum-val args))
+           (gfl-exponent) (gfl-bits)))
 
 (define (gfl- head . rest)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum
-    (if (null? rest)
-        ((mpfr-eval emin emax sig) mpfr-neg (gflonum-val head))
-        (let loop ([head (gflonum-val head)] [args rest])
-          (cond
-           [(null? args) head]
-           [else (loop ((mpfr-eval emin emax sig) mpfr-sub head (gflonum-val (car args)))
-                       (cdr args))])))
-    (gfl-exponent) (gfl-bits)))
+  (gflonum (apply mpfrv- emin emax sig (gflonum-val head) (map gflonum-val rest))
+           (gfl-exponent) (gfl-bits)))
 
 (define (gfl* . args)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum 
-    (let loop ([args (reverse args)])
-      (cond
-        [(null? args) 1.bf]
-        [(= (length args) 1) (gflonum-val (car args))]
-        [else ((mpfr-eval emin emax sig) mpfr-mul (gflonum-val (car args)) (loop (cdr args)))]))
-    (gfl-exponent) (gfl-bits)))
+  (gflonum (apply mpfrv* emin emax sig (map gflonum-val args))
+           (gfl-exponent) (gfl-bits)))
 
 (define (gfl/ head . rest)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum 
-    (let loop ([head (gflonum-val head)] [args rest])
-      (cond
-        [(null? args) head]
-        [else (loop ((mpfr-eval emin emax sig) mpfr-div head (gflonum-val (car args)))
-                    (cdr args))]))
-    (gfl-exponent) (gfl-bits)))
+  (gflonum (apply mpfrv/ emin emax sig (gflonum-val head) (map gflonum-val rest))
+           (gfl-exponent) (gfl-bits)))
 
 ;;;;;;;;;;;;;;;;;;; Miscellaneous operators ;;;;;;;;;;;;;;;;
 
@@ -337,6 +356,18 @@
     (define exp (+ (bigfloat-exponent (gflonum-val x)) sig -1))
     (negative? (+ exp emax -2))]))
 
+(define (gfls-between x y)
+  (- (gfl->ordinal x) (gfl->ordinal y)))
+
+(define (gflnext x)
+  (ordinal->gfl (+ (gfl->ordinal x) 1)))
+
+(define (gflprev x)
+  (ordinal->gfl (- (gfl->ordinal x) 1)))
+
+(define (gflstep x n)
+  (ordinal->gfl (+ (gfl->ordinal x) n)))
+
 ;;;;;;;;;;;;;;;;;;; Constants ;;;;;;;;;;;;;;;;
 
 (define-for-syntax const-funs (list))
@@ -347,14 +378,25 @@
     (define (name)
       (define sig (- (gfl-bits) (gfl-exponent)))
       (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-      (gflonum ((mpfr-eval emin emax sig) mpfr-fun) (gfl-exponent) (gfl-bits)))))
+      (gflonum ((mpfr-eval emin emax sig) mpfr-fun) (gfl-exponent) (gfl-bits)))
+    (provide name)
+    (begin-for-syntax (set! const-funs (cons #'name const-funs)))))
 
 (define-syntax-rule (gfl-0ary-funs [name mpfr-fun] ...)
   (begin (gfl-0ary-fun name mpfr-fun) ...))
 
 (gfl-0ary-funs
- [gflpi mpfr-const-pi]
- [gflln2 mpfr-const-log2])
+ [pi.gfl mpfr-const-pi]
+ [log2.gfl mpfr-const-log2]
+ [euler.gfl mpfr-const-euler]
+ [catalan.gfl mpfr-const-catalan])
+
+(define (phi.gfl)
+  (parameterize ([bf-precision (+ (- (gfl-bits) (gfl-exponent)) 10)])
+    (gfl/ (gfl+ (force (real->gfl 1)) (gflsqrt (force (real->gfl 5)))) (force (real->gfl 2)))))
+
+(provide phi.gfl)
+(begin-for-syntax (set! const-funs (cons 'phi.gfl const-funs)))
 
 (define-syntax-rule (gfl-0ary-const name val)
   (begin
@@ -366,23 +408,7 @@
   (begin (gfl-0ary-const name val) ...))
 
 (gfl-0ary-consts
- ; C library math constants
- [e.gfl (gflexp (real->gfl 1))]
- [log2e.gfl (gfllog2 (gflexp (real->gfl 1)))]
- [log10e.gfl (gfllog10 (gflexp (real->gfl 1)))]
- [ln2.gfl (gflln2)]
- [ln10.gfl (gfllog (real->gfl 10))]
- [pi.gfl (gflpi)]
- [pi/2.gfl (gflasin (real->gfl 1))]
- [pi/4.gfl (gflatan2 (real->gfl +inf.0) (real->gfl +inf.0))]
- [1/pi.gfl (gfl/ (real->gfl 1) (gflatan2 (real->gfl 0) (real->gfl -1)))]
- [2/pi.gfl (gfl/ (real->gfl 2) (gflatan2 (real->gfl 0) (real->gfl -1)))]
- [2/sqrtpi.gfl (gfl/ (real->gfl 2) (gflsqrt (gflatan2 (real->gfl 0) (real->gfl -1))))]
- [sqrt2.gfl (gflsqrt (real->gfl 2))]
- [sqrt1/2.gfl (gflsqrt (real->gfl 1/2))]
-
- ; Bigfloat constants
- [+max.gfl (ordinal->gfl (- (gfl->ordinal (real->gfl +inf.0)) 1))]
+ [+max.gfl (gflprev (real->gfl +inf.0))]
  [+min.gfl (ordinal->gfl 1)]
- [-max.gfl (ordinal->gfl (- 1 (gfl->ordinal (real->gfl +inf.0))))]
+ [-max.gfl (gflnext (real->gfl -inf.0))]
  [-min.gfl (ordinal->gfl -1)])
