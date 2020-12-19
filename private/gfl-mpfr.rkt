@@ -6,8 +6,7 @@
          gfl-bits
          (rename-out [mpfr-rounding-mode gfl-rounding-mode])
          (rename-out [gflonum? gfl?])
-         real->gfl
-         gfl->real
+         real->gfl gfl->real
          bigfloat->gfl 
          gfl->bigfloat
          ordinal->gfl
@@ -19,16 +18,12 @@
          gfl-
          gfl*
          gfl/
+         gflmax
+         gflmin
          gflroot
          gfljn
          gflyn
-         gflfma
-         gflsgn
-         gflsubnormal?
-         gfls-between
-         gflnext
-         gflprev
-         gflstep)
+         gflfma)
 
 ;;;;;;;;;;;; Parameters / Structs ;;;;;;;;;;;;   
 
@@ -243,8 +238,6 @@
  [gflfloor mpfr-floor]
  [gflfmod mpfr-fmod]
  [gflhypot mpfr-hypot]
- [gflmax mpfr-max]
- [gflmin mpfr-min]
  [gflremainder mpfr-remainder]
  [gflrint mpfr-rint]
  [gflround mpfr-round]
@@ -311,7 +304,7 @@
   (cond
    [(null? xs) ((mpfr-eval emin emax sig) mpfr-div 1.bf x)]
    [else
-    (let loop ([x (car xs)] [xs (cdr xs)])
+    (let loop ([x x] [xs xs])
       (cond
        [(null? xs) x]
        [else (loop ((mpfr-eval emin emax sig) mpfr-div x (car xs)) (cdr xs))]))]))
@@ -339,6 +332,20 @@
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
   (gflonum (apply mpfrv/ emin emax sig (gflonum-val head) (map gflonum-val rest))
            (gfl-exponent) (gfl-bits)))
+
+(define (gflmax2 x y)
+  (if (bf> (gflonum-val x) (gflonum-val y)) x y))
+
+(define (gflmin2 x y)
+  (if (bf> (gflonum-val x) (gflonum-val y)) y x))
+
+(define (gflmax . args)
+  (cond [(null? args) (real->gfl -inf.0)]
+        [else (foldl gflmax2 (car args) (cdr args))]))
+
+(define (gflmin . args)
+  (cond [(null? args) (real->gfl +inf.0)]
+        [else (foldl gflmin2 (car args) (cdr args))]))
 
 ;;;;;;;;;;;;;;;;;;; Miscellaneous operators ;;;;;;;;;;;;;;;;
 
@@ -368,6 +375,8 @@
 (define (gflstep x n)
   (ordinal->gfl (+ (gfl->ordinal x) n)))
 
+(provide gflsgn gflsubnormal? gfls-between gflnext gflprev gflstep)
+
 ;;;;;;;;;;;;;;;;;;; Constants ;;;;;;;;;;;;;;;;
 
 (define-for-syntax const-funs (list))
@@ -392,8 +401,9 @@
  [catalan.gfl mpfr-const-catalan])
 
 (define (phi.gfl)
-  (parameterize ([bf-precision (+ (- (gfl-bits) (gfl-exponent)) 10)])
-    (gfl/ (gfl+ (force (real->gfl 1)) (gflsqrt (force (real->gfl 5)))) (force (real->gfl 2)))))
+  (gflcopy
+    (parameterize ([gfl-bits (+ (gfl-bits) 10)])
+      (gfl/ (gfl+ (real->gfl 1) (gflsqrt (real->gfl 5))) (real->gfl 2)))))
 
 (provide phi.gfl)
 (begin-for-syntax (set! const-funs (cons 'phi.gfl const-funs)))

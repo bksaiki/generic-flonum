@@ -15,19 +15,24 @@
 This library provides an alternate interface to @hyperlink["http://mpfr.org" "MPFR"] (compared to @bigfloat-link), emphasizing the emulation of floating-point
 formats such as @italic{binary128}, @italic{binary16}, @italic{bfloat16}, etc.
 
-@section{Motivations}
+@section{Introduction}
 
 While the @bigfloat-link interface is sufficient for most high-precision computing, it is lacking in a couple areas. Mainly, it does not
 @itemlist[#:style 'ordered
-          @item{properly emulate subnormal values}
+          @item{properly emulate subnormal arithmetic}
           @item{allow the exponent range to be changed}]
-If the user's intent is to compute, say @racket[(exp -10)] and @racket[(exp 20)], to find a close estimate of their real values, then neither of the problems above matter.
-However, if the user wanted to know their properly rounded values in half-precision, then @bigfloat-link becomes insufficient.
+Normally, neither of these problems cause concern. For example, if a user intends to compute at any given precision to
+find a close estimate of the real value, then subnormal arithmetic or a narrower exponent range is not particular useful.
+However, if a user wants to know the result of a computation in half-precision, then @bigfloat-link becomes insufficient.
 
-At half-precision, @racket[(exp -10)] and @racket[(exp 20)] evaluate to @racket[4.5419e-5] and @racket[+inf.0], respectively. On the other hand, evaluating @racket[(bfexp (bf -10))]
-and @racket[(bfexp (bf -10))] with @racket[(bf-precision 11)] returns @racket[(bf "4.5389e-5")] and @racket[(bf "#e4.8523e8")]. While the latter results are certainly
-more accurate when comparing to a high precision result, they do not reflect proper behavior for half-precision. The standard bigfloat library does not subnormalize the first result
- (no subnormalizing capabilities), nor does it recognize the overflow in the second result (fixed exponent range).
+At half-precision, @racket[(exp -10)] and @racket[(exp 20)] evaluate to @racket[4.5419e-5] and @racket[+inf.0], respectively. On the other hand,
+evaluating @racket[(bfexp (bf -10))] and @racket[(bfexp (bf -10))] with @racket[(bf-precision 11)] returns @racket[(bf "4.5389e-5")] and
+@racket[(bf "#e4.8523e8")]. While the latter results are certainly more accurate, they do not reflect proper behavior in half-precision.
+The standard bigfloat library does not subnormalize the first result (no subnormal arithmetic), nor does it recognize the overflow in the
+second result (fixed exponent range).
+
+Thus the usefulness of this interface is narrow since @bigfloat-link is adequate in most cases. However, generic-flonum is much better at
+correctly emulating different floating-point types.
 
 @section{Type and Constructors}
 
@@ -86,7 +91,7 @@ same time as their bigfloat counterparts, although this behavior may change in t
           #:value 64]{
   A parameter that defines the current sum of the exponent size and significand size of
   values returned from most functions in this library. More concisely, it defines the significand
-  size indirectly. The significand size corresponds to @racket[(bf-precision)]) and is equal to
+  size indirectly. The significand size corresponds to @racket[(bf-precision)] and is equal to
   @racket[(- (gfl-bits) (gfl-exponent))]. Default value is the length of a flonum in bits.
   This parameter has a guard that ensures @racket[(gfl-bits)] is more than @racket[(gfl-exponent)].
 }
@@ -94,7 +99,7 @@ same time as their bigfloat counterparts, although this behavior may change in t
 @defparam[gfl-rounding-mode rm (symbols 'nearest 'zero 'up 'down 'away)
           #:value 'nearest]{
   A parameter that determines the mode used to round the result of most functions in this library.
-  Note that @racket[(bf-rounding-mode)] accepts all of these except @racket['away].
+  Note that @racket[(bf-rounding-mode)] accepts all values except @racket['away].
 }
 
 @section{Constants}

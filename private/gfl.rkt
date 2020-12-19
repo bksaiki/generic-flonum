@@ -38,6 +38,8 @@
    [gfl- (gfl? gfl? ... . -> . gfl?)]
    [gfl* (gfl? ... . -> . gfl?)]
    [gfl/ (gfl? gfl? ... . -> . gfl?)]
+   [gflmax (gfl? ... . -> . gfl?)]
+   [gflmin (gfl? ... . -> . gfl?)]
    
    [gflsgn (gfl? . -> . gfl?)]
    [gflsqr (gfl? . -> . gfl?)]
@@ -95,8 +97,6 @@
    [gflfloor (gfl? gfl? . -> . gfl?)]
    [gflfmod (gfl? gfl? . -> . gfl?)]
    [gflhypot (gfl? gfl? . -> . gfl?)]
-   [gflmax (gfl? gfl? . -> . gfl?)]
-   [gflmin (gfl? gfl? . -> . gfl?)]
    [gflremainder (gfl? gfl? . -> . gfl?)]
    [gflrint (gfl? gfl? . -> . gfl?)]
    [gflround (gfl? gfl? . -> . gfl?)]
