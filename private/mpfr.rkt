@@ -172,6 +172,8 @@
  [mpfr-acosh 'mpfr_acosh]
  [mpfr-asinh 'mpfr_asinh]
  [mpfr-atanh 'mpfr_atanh]
+ [mpfr-erf 'mpfr_erf]
+ [mpfr-erfc 'mpfr_erfc]
  [mpfr-gamma 'mpfr_gamma]
  [mpfr-lgamma 'mpfr_lgamma]
  [mpfr-digamma 'mpfr_digamma]
@@ -183,7 +185,12 @@
  [mpfr-j1 'mpfr_j1]
  [mpfr-y0 'mpfr_y0]
  [mpfr-y1 'mpfr_y1]
- [mpfr-ai 'mpfr_ai])
+ [mpfr-ai 'mpfr_ai]
+ [mpfr-ceil 'mpfr_ceil]
+ [mpfr-floor 'mpfr_floor] 
+ [mpfr-rint 'mpfr_rint]
+ [mpfr-round 'mpfr_round]
+ [mpfr-trunc 'mpfr_trunc])
 
 (mpfr-2ary-funs
  [mpfr-add 'mpfr_add]
@@ -193,20 +200,11 @@
  [mpfr-agm 'mpfr_agm]
  [mpfr-atan2 'mpfr_atan2]
  [mpfr-copysign 'mpfr-copysign]
- [mpfr-ceil 'mpfr_ceil]
  [mpfr-dim 'mpfr_dim]
- [mpfr-erf 'mpfr_erf]
- [mpfr-erfc 'mpfr_erfc]
- [mpfr-floor 'mpfr_floor]
  [mpfr-fmod 'mpfr_fmod]
  [mpfr-hypot 'mpfr_hypot]
- [mpfr-max 'mpfr_max]
- [mpfr-min 'mpfr_min]
  [mpfr-pow 'mpfr_pow]
- [mpfr-remainder 'mpfr_remainder]
- [mpfr-rint 'mpfr_rint]
- [mpfr-round 'mpfr_round]
- [mpfr-trunc 'mpfr_trunc])
+ [mpfr-remainder 'mpfr_remainder])
 
 (mpfr-1ary-2val-funs
  [mpfr-sin-cos 'mpfr_sin_cos]

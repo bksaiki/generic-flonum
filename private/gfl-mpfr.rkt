@@ -178,6 +178,8 @@
  [gflacosh mpfr-acosh]
  [gflasinh mpfr-asinh]
  [gflatanh mpfr-atanh]
+ [gflerf mpfr-erf]
+ [gflerfc mpfr-erfc]
  [gflgamma mpfr-gamma]
  [gfllgamma mpfr-lgamma]
  [gfldigamma mpfr-digamma]
@@ -189,7 +191,12 @@
  [gflj1 mpfr-j1]
  [gfly0 mpfr-y0]
  [gfly1 mpfr-y1]
- [gflai mpfr-ai])
+ [gflai mpfr-ai]
+ [gflceiling mpfr-ceil]
+ [gflfloor mpfr-floor]
+ [gflrint mpfr-rint]
+ [gflround mpfr-round]
+ [gfltruncate mpfr-trunc])
 
 (define-syntax-rule (gfl-1ary-2val-fun name mpfr-fun)
   (begin
@@ -229,19 +236,12 @@
 (gfl-2ary-funs
  [gflagm mpfr-agm]
  [gflatan2 mpfr-atan2]
- [gflceiling mpfr-ceil]
  [gflcopysign mpfr-copysign]
  [gfldim mpfr-dim]
- [gflerf mpfr-erf]
- [gflerfc mpfr-erfc]
  [gflexpt mpfr-pow]
- [gflfloor mpfr-floor]
  [gflfmod mpfr-fmod]
  [gflhypot mpfr-hypot]
- [gflremainder mpfr-remainder]
- [gflrint mpfr-rint]
- [gflround mpfr-round]
- [gfltruncate mpfr-trunc])
+ [gflremainder mpfr-remainder])
 
 (define (gflroot x n)
   (define sig (- (gfl-bits) (gfl-exponent)))
