@@ -239,7 +239,7 @@
  [gflcopysign mpfr-copysign]
  [gfldim mpfr-dim]
  [gflexpt mpfr-pow]
- [gflfmod mpfr-fmod]
+ [gflmod mpfr-mod]
  [gflhypot mpfr-hypot]
  [gflremainder mpfr-remainder])
 

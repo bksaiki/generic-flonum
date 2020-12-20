@@ -21,9 +21,10 @@ While the @bigfloat-link interface is sufficient for most high-precision computi
 @itemlist[#:style 'ordered
           @item{properly emulate subnormal arithmetic}
           @item{allow the exponent range to be changed}]
-Normally, neither of these problems cause concern. For example, if a user intends to compute at any given precision to
-find a close estimate of the real value, then subnormal arithmetic or a narrower exponent range is not particular useful.
-However, if a user wants to know the result of a computation in half-precision, then @bigfloat-link becomes insufficient.
+Normally, neither of these problems cause concern. For example, if a user intends to find an approximate value
+for some computation on the reals, then subnormal arithmetic or a narrower exponent range is not particular useful.
+However, if a user wants to know the result of a computation specifically in some format, say half-precision, then
+@bigfloat-link is insufficient.
 
 At half-precision, @racket[(exp -10)] and @racket[(exp 20)] evaluate to @racket[4.5419e-5] and @racket[+inf.0], respectively. On the other hand,
 evaluating @racket[(bfexp (bf -10))] and @racket[(bfexp (bf -10))] with @racket[(bf-precision 11)] returns @racket[(bf "4.5389e-5")] and
@@ -31,10 +32,18 @@ evaluating @racket[(bfexp (bf -10))] and @racket[(bfexp (bf -10))] with @racket[
 The standard bigfloat library does not subnormalize the first result (no subnormal arithmetic), nor does it recognize the overflow in the
 second result (fixed exponent range).
 
-Thus the usefulness of this interface is narrow since @bigfloat-link is adequate in most cases. However, generic-flonum is much better at
-correctly emulating different floating-point types.
+This library fixes the issues mentioned above by automatically emulating subnormal arithmetic when
+necessary and providing a way to change the exponent range. In addition, the interface is quite
+similar to @bigfloat-link, so it will feel familiar to anyone who has used the standard bigfloat library
+before. There are also a few extra operations from the C math library such as @racket[gflfma], @racket[gflmod], and
+@racket[gflremainder] that the bigfloat library does not support.
+
+See @bigfloat-link for more information on bigfloats.
 
 @section{Type and Constructors}
+
+A generic flonum is a wrapper that stores a bigfloat and the significand and exponent size
+when it was initialized.
 
 @defproc[(gfl? [v any/c])
          boolean?]{
@@ -117,11 +126,12 @@ same time as their bigfloat counterparts, although this behavior may change in t
               @defthing[+max.gfl gfl?]
               @defthing[+min.gfl gfl?]
               @defthing[0.gfl gfl?]
+              @defthing[-0.gfl gfl?]
               @defthing[-min.gfl gfl?]
               @defthing[-max.gfl gfl?]
               @defthing[-inf.gfl gfl?])]{
  Constants corresponding to @racket[+nan.0], @racket[+inf.0], @racket[+max.0], @racket[+min.0],
- @racket[0.0], @racket[-min.0], @racket[-max.0], and @racket[-inf.0].
+ @racket[0.0], @racket[-0.0], @racket[-min.0], @racket[-max.0], and @racket[-inf.0].
 }
 
 @deftogether[(@defthing[10.gfl gfl?]

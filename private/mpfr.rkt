@@ -201,7 +201,7 @@
  [mpfr-atan2 'mpfr_atan2]
  [mpfr-copysign 'mpfr-copysign]
  [mpfr-dim 'mpfr_dim]
- [mpfr-fmod 'mpfr_fmod]
+ [mpfr-mod 'mpfr_fmod]
  [mpfr-hypot 'mpfr_hypot]
  [mpfr-pow 'mpfr_pow]
  [mpfr-remainder 'mpfr_remainder])

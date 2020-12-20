@@ -99,7 +99,7 @@
    [gflcopysign (gfl? gfl? . -> . gfl?)]
    [gfldim (gfl? gfl? . -> . gfl?)]
    [gflexpt (gfl? gfl? . -> . gfl?)]
-   [gflfmod (gfl? gfl? . -> . gfl?)]
+   [gflmod (gfl? gfl? . -> . gfl?)]
    [gflhypot (gfl? gfl? . -> . gfl?)]
    [gflremainder (gfl? gfl? . -> . gfl?)]
 
