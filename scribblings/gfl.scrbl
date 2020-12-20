@@ -92,8 +92,7 @@ same time as their bigfloat counterparts, although this behavior may change in t
 @defparam[gfl-exponent es exact-positive-integer?
           #:value 11]{
   A parameter that defines the current exponent size of values returned from most functions
-  in this library. Default value is the exponent size of a flonum. This parameter has a guard
-  that ensures @racket[(gfl-exponent)] is less than @racket[(gfl-bits)].
+  in this library. Default value is the exponent size of a flonum.
 }
 
 @defparam[gfl-bits nb exact-positive-integer?
@@ -102,7 +101,6 @@ same time as their bigfloat counterparts, although this behavior may change in t
   values returned from most functions in this library. More concisely, it defines the significand
   size indirectly. The significand size corresponds to @racket[(bf-precision)] and is equal to
   @racket[(- (gfl-bits) (gfl-exponent))]. Default value is the length of a flonum in bits.
-  This parameter has a guard that ensures @racket[(gfl-bits)] is more than @racket[(gfl-exponent)].
 }
 
 @defparam[gfl-rounding-mode rm (symbols 'nearest 'zero 'up 'down 'away)
