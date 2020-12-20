@@ -8,7 +8,7 @@
 @(define bigfloat-link (hyperlink "http://docs.racket-lang.org/math/bigfloat.html" "math/bigfloat"))
 
 @title{Generic Flonums}
-@author{Brett Saiki}
+@author[(author+email "Brett Saiki" "bksaiki@gmail.com")]
 
 @defmodule[generic-flonum]
 

@@ -1,0 +1,21 @@
+name: Unit tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          path: src
+      - name: "Install Packages"
+        run: sudo apt-get install -y libmpfr6 libmpfr-dev
+      - name: "Install Racket"
+        uses: Bogdanp/setup-racket@v0.12
+      - name: "Build package"
+        run: raco pkg install --name generic-flonum --no-cache --auto src/
+      - name: "Run tests"
+        run: |
+          raco make src/tests/*.rkt
+          raco test src/tests/
