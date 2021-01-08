@@ -220,6 +220,11 @@ same time as their bigfloat counterparts, although this behavior may change in t
   Returns the arithmetic-geometric mean of @racket[x] and @racket[y].
 }
 
+@defproc[(gflfma [x gfl?] [y gfl?] [z gfl?])
+          gfl?]{
+  Computes @racket[(gfl+ (gfl* x y) z)] without intermediate overflow or rounding.
+}
+
 @deftogether[(@defproc[(gflsqrt [x gfl?]) gfl?]
               @defproc[(gfl1/sqrt [x gfl?]) gfl?]
               @defproc[(gflcbrt [x gfl?]) gfl?])]{
@@ -291,17 +296,12 @@ same time as their bigfloat counterparts, although this behavior may change in t
 
 @defproc[(gflsin+cos [x gfl?])
           (values gfl? gfl?)]{
-  Simultaneously compute the sine and cosine of @racket[x].
+  Simultaneously computes the sine and cosine of @racket[x].
 }
 
 @defproc[(gflsinh+cosh [x gfl?])
           (values gfl? gfl?)]{
-  Simultaneously compute the hyperbolic sine and cosine of @racket[x].
-}
-
-@defproc[(gflfma [x gfl?] [y gfl?] [z gfl?])
-          gfl?]{
-  Compute @racket[(gfl+ (gfl* x y) z)] without intermediate overflow or rounding.
+  Simultaneously computes the hyperbolic sine and cosine of @racket[x].
 }
 
 @deftogether[(@defproc[(gflgamma [x gfl?]) gfl?]
