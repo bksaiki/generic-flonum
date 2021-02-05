@@ -109,11 +109,18 @@ same time as their bigfloat counterparts, although this behavior may change in t
   Note that @racket[(bf-rounding-mode)] accepts all values except @racket['away].
 }
 
+@defparam[gfl-verbose? b boolean?
+          #:value #t]{
+  A parameter that controls the verbosity when printing generic-flonums. When set to true, generic-flonums
+  are printed in a custom format: @racket["#<gfl[es, nb]: v>"]. When set to false, generic-flonums are
+  printed in a format similar to bigfloats: @racket["(gfl v)"].
+}
+
 @section{Constants}
 
 @deftogether[(@defthing[pi.gfl gfl?]
               @defthing[phi.gfl gfl?]
-              @defthing[gamma.gfl gfl?]
+              @defthing[euler.gfl gfl?]
               @defthing[catalan.gfl gfl?]
               @defthing[log2.gfl gfl?])]{
   Approximations of π, φ, γ, G, and log(2).

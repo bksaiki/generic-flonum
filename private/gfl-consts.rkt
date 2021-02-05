@@ -1,6 +1,6 @@
 #lang racket
 
-(require "gfl-mpfr.rkt"
+(require "gfl.rkt"
          (for-syntax racket/base racket/syntax syntax/strip-context))
 
 ;;;;;;;;;;;;;;;; Constants ;;;;;;;;;;;;;;;;
