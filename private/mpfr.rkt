@@ -11,9 +11,9 @@
   (provide mpfr-set mpfr-set-ebounds! mpfr-get-emin mpfr-get-emax
            mpfr-0ary-funs mpfr-1ary-funs mpfr-2ary-funs mpfr-1ary-2val-funs
            mpfr-rounding-mode
-           mpfr-fma mpfr-root
+           mpfr-sum mpfr-fma mpfr-root
            mpfr-jn mpfr-yn
-           mpfr-sum)
+           mpfr-lgamma)
 
   ;; Override _rnd_t type from bigfloat
   (define _rnd_t (_enum '(nearest zero up down away)))
@@ -92,6 +92,16 @@
     (define fun (get-mpfr-fun 'mpfr_root (_fun _mpfr-pointer _mpfr-pointer _uint _rnd_t -> _int)))
     (define r (bf 0))
     (define t (fun r x n (mpfr-rounding-mode)))
+    (mpfr-subnormalize r t (mpfr-rounding-mode))
+    r)
+
+  (define mpfr-lgamma-fun
+    (get-mpfr-fun 'mpfr_lgamma (_fun _mpfr-pointer _pointer _mpfr-pointer _rnd_t -> _int)))
+
+  (define (mpfr-lgamma x)
+    (define r (bf 0))
+    (define s (malloc _int))
+    (define t (mpfr-lgamma-fun r s x (mpfr-rounding-mode)))
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
@@ -175,7 +185,6 @@
  [mpfr-erf 'mpfr_erf]
  [mpfr-erfc 'mpfr_erfc]
  [mpfr-gamma 'mpfr_gamma]
- [mpfr-lgamma 'mpfr_lgamma]
  [mpfr-digamma 'mpfr_digamma]
  [mpfr-eint 'mpfr_eint]
  [mpfr-li2 'mpfr_li2]
@@ -199,7 +208,7 @@
  [mpfr-div 'mpfr_div]
  [mpfr-agm 'mpfr_agm]
  [mpfr-atan2 'mpfr_atan2]
- [mpfr-copysign 'mpfr-copysign]
+ [mpfr-copysign 'mpfr_copysign]
  [mpfr-dim 'mpfr_dim]
  [mpfr-mod 'mpfr_fmod]
  [mpfr-hypot 'mpfr_hypot]
