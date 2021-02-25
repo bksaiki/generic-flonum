@@ -166,7 +166,7 @@ same time as their bigfloat counterparts, although this behavior may change in t
 
 @deftogether[(@defproc[(gflzero? [x gfl?]) boolean?]
               @defproc[(gflpositive? [x gfl?]) boolean?]
-              @defproc[(gflnegative [x gfl?]) boolean?]
+              @defproc[(gflnegative? [x gfl?]) boolean?]
               @defproc[(gflinfinite? [x gfl?]) boolean?]
               @defproc[(gflnan? [x gfl?]) boolean?])]{
   Unary predicates corresponding to @racket[zero?], @racket[positive?], @racket[negative?],
