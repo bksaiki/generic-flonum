@@ -81,17 +81,21 @@
   (define-syntax-rule (mpfr-1ary-2val-funs [name mpfr-name] ...)
     (begin (mpfr-1ary-2val-fun name mpfr-name) ...))
 
+  (define mpfr-fma-fun
+    (get-mpfr-fun 'mpfr_fma (_fun _mpfr-pointer _mpfr-pointer _mpfr-pointer _mpfr-pointer _rnd_t -> _int)))
+
   (define (mpfr-fma x y z)
-    (define fun (get-mpfr-fun 'mpfr_fma (_fun _mpfr-pointer _mpfr-pointer _mpfr-pointer _mpfr-pointer _rnd_t -> _int)))
     (define r (bf 0))
-    (define t (fun r x y z (mpfr-rounding-mode)))
+    (define t (mpfr-fma-fun r x y z (mpfr-rounding-mode)))
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
+  (define mpfr-root-fun
+    (get-mpfr-fun 'mpfr_root (_fun _mpfr-pointer _mpfr-pointer _uint _rnd_t -> _int)))
+
   (define (mpfr-root x n)
-    (define fun (get-mpfr-fun 'mpfr_root (_fun _mpfr-pointer _mpfr-pointer _uint _rnd_t -> _int)))
     (define r (bf 0))
-    (define t (fun r x n (mpfr-rounding-mode)))
+    (define t (mpfr-root-fun r x n (mpfr-rounding-mode)))
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
@@ -105,24 +109,30 @@
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
+  (define mpfr-jn-fun
+    (get-mpfr-fun 'mpfr_jn (_fun _mpfr-pointer _long _mpfr-pointer _rnd_t -> _int)))
+
   (define (mpfr-jn n x)
-    (define fun (get-mpfr-fun 'mpfr_jn (_fun _mpfr-pointer _long _mpfr-pointer _rnd_t -> _int)))
     (define r (bf 0))
-    (define t (fun r n x (mpfr-rounding-mode)))
+    (define t (mpfr-jn-fun r n x (mpfr-rounding-mode)))
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
+
+  (define mpfr-yn-fun
+    (get-mpfr-fun 'mpfr_yn (_fun _mpfr-pointer _long _mpfr-pointer _rnd_t -> _int)))
 
   (define (mpfr-yn n x)
-    (define fun (get-mpfr-fun 'mpfr_yn (_fun _mpfr-pointer _long _mpfr-pointer _rnd_t -> _int)))
     (define r (bf 0))
-    (define t (fun r n x (mpfr-rounding-mode)))
+    (define t (mpfr-yn-fun r n x (mpfr-rounding-mode)))
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
+  (define mpfr-sum-fun
+    (get-mpfr-fun 'mpfr_sum (_fun _mpfr-pointer (_list i _mpfr-pointer) _ulong _rnd_t -> _int)))
+
   (define (mpfr-sum xs)
-    (define fun (get-mpfr-fun 'mpfr_sum (_fun _mpfr-pointer (_list i _mpfr-pointer) _ulong _rnd_t -> _int)))
     (define r (bf 0))
-    (define t (fun r xs (length xs) (mpfr-rounding-mode)))
+    (define t (mpfr-sum-fun r xs (length xs) (mpfr-rounding-mode)))
     (mpfr-subnormalize r t (mpfr-rounding-mode))
     r)
 
