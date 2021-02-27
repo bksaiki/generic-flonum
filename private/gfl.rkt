@@ -348,7 +348,7 @@
   (cond
    [(gflnan? x) y]
    [(gflnan? y) x]
-   [else (if (bf< (gflonum-val x) (gflonum y)) x y)]))
+   [else (if (bf< (gflonum-val x) (gflonum-val y)) x y)]))
 
 (define (gflmax . args)
   (cond [(null? args) (real->gfl -inf.0)]
