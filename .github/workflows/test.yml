@@ -1,0 +1,24 @@
+name: Unit testing
+
+on: [push]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          path: src
+      - name: "Install Racket"
+        uses: Bogdanp/setup-racket@v0.12
+      - name: "Install generic-flonum as package"
+        run: raco pkg install --no-cache --auto
+      - name: "Unit tests"
+        run: |
+          raco test .
