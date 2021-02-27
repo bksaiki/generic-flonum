@@ -18,7 +18,7 @@ jobs:
       - name: "Install Racket"
         uses: Bogdanp/setup-racket@v0.12
       - name: "Install generic-flonum as package"
-        run: raco pkg install --no-cache --auto
+        run: raco pkg install --no-cache --auto --name generic-flonum src/
       - name: "Unit tests"
         run: |
           raco test .
