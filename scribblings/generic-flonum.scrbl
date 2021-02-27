@@ -109,6 +109,12 @@ same time as their bigfloat counterparts, although this behavior may change in t
   Note that @racket[(bf-rounding-mode)] accepts all values except @racket['away].
 }
 
+@defparam[gfl-subnormalize? b boolean?
+          #:value #t]{
+  A parameter that controls whether results of math functions are subnormalized. When set to false,
+  this library is identical to @bigfloat-link (except for exponent range).
+}
+
 @defparam[gfl-verbose? b boolean?
           #:value #t]{
   A parameter that controls the verbosity when printing generic-flonums. When set to true, generic-flonums

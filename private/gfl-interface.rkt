@@ -7,6 +7,7 @@
    [gfl-exponent (parameter/c exact-positive-integer?)]
    [gfl-bits (parameter/c exact-positive-integer?)]
    [gfl-rounding-mode (parameter/c (symbols 'nearest 'zero 'up 'down 'away))]
+   [gfl-subnormalize? (parameter/c boolean?)]
    [gfl-verbose? (parameter/c boolean?)]
 
    [gfl ((or/c real? string?) . -> . gfl?)]

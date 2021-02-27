@@ -6,6 +6,7 @@
          gfl-bits
          gfl-verbose?
          (rename-out [mpfr-rounding-mode gfl-rounding-mode])
+         (rename-out [mpfr-subnormalize? gfl-subnormalize?])
          (rename-out [gflonum? gfl?])
          real->gfl gfl->real
          bigfloat->gfl 
