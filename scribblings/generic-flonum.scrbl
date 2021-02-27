@@ -207,8 +207,11 @@ same time as their bigfloat counterparts, although this behavior may change in t
 
 @deftogether[(@defproc[(gflmax [x gfl?] ...) gfl?]
               @defproc[(gflmin [x gfl?] ...) gfl?])]{
-  Returns the maximum and minimum of their arguments, respectively. When given no arguments, @racket[bfmin]
-  returns @racket[+inf.gfl], and @racket[bfmax] returns @racket[-inf.gfl].
+  Returns the maximum and minimum of their arguments, respectively. When given no arguments,
+  @racket[gflmin] returns @racket[+inf.gfl], and @racket[gflmax] returns @racket[-inf.gfl].
+
+  Unlike @racket[bfmin] and @racket[bfmax], these functions are C99 compliant and will only
+  return @racket[+nan.gfl] if all arguments are @racket[+nan.gfl].
 }
 
 @deftogether[(@defproc[(gflmod [x gfl?] [y gfl?]) gfl?]

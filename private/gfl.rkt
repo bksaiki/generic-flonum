@@ -338,10 +338,16 @@
            (gfl-exponent) (gfl-bits)))
 
 (define (gflmax2 x y)
-  (if (bf> (gflonum-val x) (gflonum-val y)) x y))
+  (cond
+   [(gflnan? x)   y]
+   [(gflnan? y)   x]
+   [else (if (bf> (gflonum-val x) (gflonum-val y)) x y)]))
 
 (define (gflmin2 x y)
-  (if (bf> (gflonum-val x) (gflonum-val y)) y x))
+  (cond
+   [(gflnan? x) y]
+   [(gflnan? y) x]
+   [else (if (bf< (gflonum-val x) (gflonum y)) x y)]))
 
 (define (gflmax . args)
   (cond [(null? args) (real->gfl -inf.0)]
