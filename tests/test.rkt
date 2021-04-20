@@ -1,7 +1,14 @@
 #lang racket
 
-(require rackunit math/private/bigfloat/mpfr)
+(require rackunit)
 (require "../main.rkt")
+
+(module hairy racket/base
+  (require ffi/unsafe math/private/bigfloat/mpfr)
+  (provide mpfr-get-version)
+  (define mpfr-get-version (get-mpfr-fun 'mpfr_get_version (_fun -> _string))))
+
+(require (submod "." hairy))
 
 (define (random-double)
   (define parts (make-list 4 (random (expt 2 16))))
