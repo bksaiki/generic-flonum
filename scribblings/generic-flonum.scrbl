@@ -40,25 +40,31 @@ before. There are also a few extra operations from the C math library such as @r
 
 See @bigfloat-link for more information on bigfloats.
 
-@section{Type and Constructors}
+@section{Type}
 
 A generic flonum is a wrapper that stores a bigfloat and the significand and exponent size
 when it was initialized.
 
-@defproc[(gfl? [v any/c])
-         boolean?]{
+@defproc[(gfl? [v any/c]) boolean?]{
   Returns @racket[#t] if @racket[v] is a generic-flonum.
 }
 
-@defproc[(gfl [x (or/c string? real?)])
-         gfl?]{
+@defproc[(gfl [x (or/c string? real?)]) gfl?]{
   Constructs a generic-flonum from a string or a real number.
 }
 
-@defproc[(gflcopy [x gfl?])
-          gfl?]{
+@defproc[(gflcopy [x gfl?]) gfl?]{
   Returns a generic-flonum with the same value as @racket[x] except rounded at the current
   precision and rounding mode.
+}
+
+@defproc[(gfl-init-exponent [x gfl?]) gfl?]{
+  Returns the exponent size of the generic-flonum at the time of its initialization.
+}
+
+@defproc[(gfl-init-bits [x gfl?]) gfl?]{
+  Returns the sum of the exponent and significand sizes
+  of the generic-flonum at the time of its initialization.
 }
 
 @section{Conversions}

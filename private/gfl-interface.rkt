@@ -12,6 +12,8 @@
 
    [gfl ((or/c real? string?) . -> . gfl?)]
    [gfl? (any/c . -> . boolean?)]
+   [gfl-init-exponent (gfl? . -> . exact-positive-integer?)]
+   [gfl-init-bits (gfl . -> . exact-positive-integer?)]
 
    [real->gfl (real? . -> . gfl?)]
    [gfl->real (gfl? . -> . real?)]

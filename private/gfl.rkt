@@ -8,6 +8,8 @@
          (rename-out [mpfr-rounding-mode gfl-rounding-mode])
          (rename-out [mpfr-subnormalize? gfl-subnormalize?])
          (rename-out [gflonum? gfl?])
+         (rename-out [gflonum-ex gfl-init-exponent])
+         (rename-out [gflonum-nb gfl-init-bits])
          real->gfl gfl->real
          bigfloat->gfl 
          gfl->bigfloat
