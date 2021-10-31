@@ -47,6 +47,14 @@
 (list (cons + gfl+) (cons - gfl-) (cons * gfl*) (cons / gfl/)
       (cons expt gflexpt) (cons atan gflatan2)))
 
+; Range tests
+(parameterize ([gfl-exponent 11] [gfl-bits 64])
+  (define x (gfl 1e300))
+  (define y (gfl -1e300))
+  (parameterize ([gfl-exponent 8] [gfl-bits 32])
+    (check-equal? (gfl+ x 0.gfl) +inf.gfl)
+    (check-equal? (gfl+ y 0.gfl) -inf.gfl)))
+
 ; arithmetic tests
 
 (for ([op 2ary-ops]) 

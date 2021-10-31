@@ -40,6 +40,7 @@
         (define r (bf 0))
         (define t (fun r (mpfr-rounding-mode)))
         (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+        (mpfr-check-range r 0 (mpfr-rounding-mode))
         r)))
 
   (define-syntax-rule (mpfr-0ary-funs [name mpfr-name] ...)
@@ -52,6 +53,7 @@
         (define r (bf 0))
         (define t (fun r x (mpfr-rounding-mode)))
         (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+        (mpfr-check-range r 0 (mpfr-rounding-mode))
         r)))
 
   (define-syntax-rule (mpfr-1ary-funs [name mpfr-name] ...)
@@ -64,6 +66,7 @@
         (define r (bf 0))
         (define t (fun r x y (mpfr-rounding-mode)))
         (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+        (mpfr-check-range r 0 (mpfr-rounding-mode))
         r)))
 
   (define-syntax-rule (mpfr-2ary-funs [name mpfr-name] ...)
@@ -80,6 +83,8 @@
         (when (mpfr-subnormalize?)
           (mpfr-subnormalize r0 s (mpfr-rounding-mode))
           (mpfr-subnormalize r1 t (mpfr-rounding-mode)))
+        (mpfr-check-range r0 0 (mpfr-rounding-mode))
+        (mpfr-check-range r1 0 (mpfr-rounding-mode))
         (values r0 r1))))
 
   (define-syntax-rule (mpfr-1ary-2val-funs [name mpfr-name] ...)
@@ -92,6 +97,7 @@
     (define r (bf 0))
     (define t (mpfr-fma-fun r x y z (mpfr-rounding-mode)))
     (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+    (mpfr-check-range r 0 (mpfr-rounding-mode))
     r)
 
   (define mpfr-root-fun
@@ -101,6 +107,7 @@
     (define r (bf 0))
     (define t (mpfr-root-fun r x n (mpfr-rounding-mode)))
     (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+    (mpfr-check-range r 0 (mpfr-rounding-mode))
     r)
 
   (define mpfr-lgamma-fun
@@ -111,6 +118,7 @@
     (define s (malloc _int))
     (define t (mpfr-lgamma-fun r s x (mpfr-rounding-mode)))
     (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+    (mpfr-check-range r 0 (mpfr-rounding-mode))
     r)
 
   (define mpfr-jn-fun
@@ -120,6 +128,7 @@
     (define r (bf 0))
     (define t (mpfr-jn-fun r n x (mpfr-rounding-mode)))
     (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+    (mpfr-check-range r 0 (mpfr-rounding-mode))
     r)
 
   (define mpfr-yn-fun
@@ -129,6 +138,7 @@
     (define r (bf 0))
     (define t (mpfr-yn-fun r n x (mpfr-rounding-mode)))
     (when (mpfr-subnormalize?) (mpfr-subnormalize r t (mpfr-rounding-mode)))
+    (mpfr-check-range r 0 (mpfr-rounding-mode))
     r)
 
   (define mpfr-sum-fun
@@ -142,8 +152,8 @@
 
   (define (mpfr-set x)
     (define v (if (bigfloat? x) (bfcopy x) (bf x)))
-    (mpfr-check-range v 0 (mpfr-rounding-mode))
     (when (mpfr-subnormalize?) (mpfr-subnormalize v 0 (mpfr-rounding-mode)))
+    (mpfr-check-range v 0 (mpfr-rounding-mode))
     v)
 
   (define (mpfr-set-ebounds! emin emax)
