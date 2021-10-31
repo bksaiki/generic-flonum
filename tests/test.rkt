@@ -49,11 +49,13 @@
 
 ; Range tests
 (parameterize ([gfl-exponent 11] [gfl-bits 64])
-  (define x (gfl 1e300))
-  (define y (gfl -1e300))
+  (define x (gfl 1e300))      ; overflow (positive)
+  (define y (gfl -1e300))     ; overflow (negative)
+  (define z (gfl 1e-300))     ; underflow
   (parameterize ([gfl-exponent 8] [gfl-bits 32])
     (check-equal? (gfl+ x 0.gfl) +inf.gfl)
-    (check-equal? (gfl+ y 0.gfl) -inf.gfl)))
+    (check-equal? (gfl+ y 0.gfl) -inf.gfl)
+    (check-equal? (gfl+ z 0.gfl) 0.gfl)))
 
 ; arithmetic tests
 
