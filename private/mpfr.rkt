@@ -111,7 +111,7 @@
   (let loop ([x x])
     (cond
       [(zero? x) 0.bf]
-      [(negative? x) (bf- (loop x))]
+      [(negative? x) (bf- (loop (- x)))]
       [(> x (infinite-ordinal es sig)) +nan.bf]
       [(= x (infinite-ordinal es sig)) +inf.bf]
       [else ; non-zero, real number
