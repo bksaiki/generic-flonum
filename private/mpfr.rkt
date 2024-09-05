@@ -98,45 +98,50 @@
     (mpfr-set-ebounds! emin* emax*)
     r))
 
+(define (invalid-ordinal es sig)
+  (expt 2 (sub1 (+ es sig))))
+
+(define (infinite-ordinal es sig)
+  (arithmetic-shift (sub1 (expt 2 es)) (sub1 sig)))
+
 (define (ordinal->mpfr x es sig)
-  (define x* (abs x))
-  (define infty (* (expt 2 (- sig 1)) (- (expt 2 es) 1)))
-  (define val
+  (define bound (invalid-ordinal es sig))
+  (unless (< (- bound) x bound)
+    (error 'ordinal->mpfr "ordinal out of bounds ~a" x))
+  (let loop ([x x])
     (cond
-     [(> x* infty) +nan.bf]
-     [(= x* infty) +inf.bf]
-     [(zero? x*) 0.bf]
-     [(< x* (expt 2 (- sig 1)))
-      (define unit (ordinal->bigfloat 1))
-      (define exp-offset
-        (for/fold ([l 0]) ([i (in-naturals 1)])
-              #:break (> (expt 2 i) x*)
-          i))
-      (define base (bfshift unit exp-offset))
-      (define diff (- x* (expt 2 exp-offset)))
-      (bf+ base (bf* unit (bf diff)))]
-     [else
-      (ordinal->bigfloat (+ x* (* (- sig 2) (expt 2 (- sig 1))) 1))]))
-  (if (negative? x) (bf- val) val))
+      [(zero? x) 0.bf]
+      [(negative? x) (bf- (loop x))]
+      [(> x (infinite-ordinal es sig)) +nan.bf]
+      [(= x (infinite-ordinal es sig)) +inf.bf]
+      [else ; non-zero, real number
+       (define msize (sub1 sig))
+       (define expmin (sub1 (mpfr-get-emin)))
+       (define ebits (arithmetic-shift x (- msize)))
+       (define mbits (bitwise-and x (sub1 (expt 2 msize))))
+       (cond
+         [(zero? ebits) ; subnormal
+          (bf mbits expmin)]
+         [else ; normal number
+          (define c (+ (expt 2 msize) mbits))
+          (define exp (sub1 (+ ebits expmin)))
+          (bf c exp)])])))
 
 (define (mpfr->ordinal x es sig)
-  (define x* (bfabs x))
-  (define enorm (- 2 (mpfr-get-emax)))
-  (define ex (+ (bigfloat-exponent x*) (- sig 1)))
-  (define val
+  (let loop ([x x])
     (cond
-     [(bfnan? x*)
-      (+ (* (expt 2 (- sig 1)) (- (expt 2 es) 1)) 1)]
-     [(bf= x* +inf.bf)
-      (* (expt 2 (- sig 1)) (- (expt 2 es) 1))]
-     [(bfzero? x*) 0]
-     [(< ex enorm)
-      (define unit (ordinal->bigfloat 1))
-      (define exp-offset (+ 1 (- ex (mpfr-get-emin))))
-      (define base (bfshift unit exp-offset))
-      (define accum (expt 2 exp-offset))
-      (define diff (bf- x* base))
-      (+ accum (bigfloat->real (bfround (bf/ diff unit))))]
-     [else
-      (- (bigfloat->ordinal x*) (* (- sig 2) (expt 2 (- sig 1))) 1)]))
-  (if (bfnegative? x) (- val) val))
+      [(bfzero? x) 0]
+      [(bfnegative? x) (- (loop (bf- x)))]
+      [(bfnan? x) (add1 (infinite-ordinal es sig))]
+      [(bfinfinite? x) (infinite-ordinal es sig)]
+      [else
+       (define-values (c exp) (bigfloat->sig+exp x))
+       (define expmin (sub1 (mpfr-get-emin)))
+       (cond
+         [(< exp expmin) ; subnormal
+          (define shift (- expmin exp))
+          (arithmetic-shift c (- shift))]
+         [else ; normal
+          (define ebits (add1 (- exp expmin)))
+          (define mbits (bitwise-and c (sub1 (expt 2 (sub1 sig)))))
+          (+ (arithmetic-shift ebits (sub1 sig)) mbits)])])))
