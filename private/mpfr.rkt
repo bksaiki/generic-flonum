@@ -135,7 +135,8 @@
       [(bfnan? x) (add1 (infinite-ordinal es sig))]
       [(bfinfinite? x) (infinite-ordinal es sig)]
       [else
-       (define-values (c exp) (bigfloat->sig+exp x))
+       (define-values (c exp*) (bigfloat->sig+exp x))
+       (define exp (+ exp* (bigfloat-precision x)))
        (define expmin (sub1 (mpfr-get-emin)))
        (cond
          [(< exp expmin) ; subnormal
