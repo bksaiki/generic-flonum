@@ -124,7 +124,7 @@
           (bf mbits expmin)]
          [else ; normal number
           (define c (+ (expt 2 msize) mbits))
-          (define exp (sub1 (+ ebits expmin)))
+          (define exp (+ (sub1 ebits) expmin))
           (bf c exp)])])))
 
 (define (mpfr->ordinal x es sig)
@@ -135,13 +135,14 @@
       [(bfnan? x) (add1 (infinite-ordinal es sig))]
       [(bfinfinite? x) (infinite-ordinal es sig)]
       [else
-       (define-values (c exp*) (bigfloat->sig+exp x))
-       (define exp (+ exp* (bigfloat-precision x)))
+       (define-values (c exp) (bigfloat->sig+exp x))
+       (define e (+ exp (bigfloat-precision x) -1))
        (define expmin (sub1 (mpfr-get-emin)))
+       (define emin (+ expmin sig -1))
        (cond
-         [(< exp expmin) ; subnormal
-          (define shift (- expmin exp))
-          (arithmetic-shift c (- shift))]
+         [(< e emin) ; subnormal
+          (define shift (- exp expmin))
+          (arithmetic-shift c shift)]
          [else ; normal
           (define ebits (add1 (- exp expmin)))
           (define mbits (bitwise-and c (sub1 (expt 2 (sub1 sig)))))
