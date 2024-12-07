@@ -75,9 +75,9 @@
        (gfl-exponent) (gfl-bits)))
 
 (define (gfl->ordinal x)
-  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define sig (- (gflonum-nb x) (gflonum-ex x)))
   (define-values (emin emax) (ex->ebounds (gflonum-ex x) sig))
-  ((mpfr-eval emin emax sig) (curryr mpfr->ordinal (gfl-exponent) sig) (gflonum-val x)))
+  ((mpfr-eval emin emax sig) (curryr mpfr->ordinal (gflonum-ex x) sig) (gflonum-val x)))
 
 (define (string->gfl x)
   (define sig (- (gfl-bits) (gfl-exponent)))
