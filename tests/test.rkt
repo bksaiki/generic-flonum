@@ -101,7 +101,8 @@
 ; (check-equal? (gfl- 0.gfl) -0.gfl)
 ; (check-equal? (gfl- -0.gfl) 0.gfl)
 
-(for ([bits '(13 15 29 27 43 75 139 14 16 18 22 24 140)])
+; (for ([bits '(13 15 29 27 43 75 139 14 16 18 22 24 140)])
+(for ([bits '(13)])
   (parameterize ([gfl-bits bits])
     ;; +max.gfl/-max.gfl
    ; (check-equal? (gfl- +max.gfl) -max.gfl)

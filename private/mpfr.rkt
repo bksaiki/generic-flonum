@@ -11,7 +11,6 @@
          mpfr-lgamma
          mpfr-jn
          mpfr-yn
-         mpfr-sum
          mpfr-set
          mpfr-set-ebounds!)
 
@@ -104,46 +103,55 @@
 (define (infinite-ordinal es sig)
   (arithmetic-shift (sub1 (expt 2 es)) (sub1 sig)))
 
-(define (ordinal->mpfr x es sig)
-  (define bound (invalid-ordinal es sig))
+(define (ordinal->mpfr x es p)
+  (define bound (invalid-ordinal es p))
   (unless (< (- bound) x bound)
     (error 'ordinal->mpfr "ordinal out of bounds ~a" x))
   (let loop ([x x])
     (cond
       [(zero? x) 0.bf]
       [(negative? x) (bf- (loop (- x)))]
-      [(> x (infinite-ordinal es sig)) +nan.bf]
-      [(= x (infinite-ordinal es sig)) +inf.bf]
+      [(> x (infinite-ordinal es p)) +nan.bf]
+      [(= x (infinite-ordinal es p)) +inf.bf]
       [else ; non-zero, real number
-       (define msize (sub1 sig))
        (define expmin (sub1 (mpfr-get-emin)))
-       (define ebits (arithmetic-shift x (- msize)))
-       (define mbits (bitwise-and x (sub1 (expt 2 msize))))
+       (define mask (sub1 (expt 2 (sub1 p))))
+       (define mbits (bitwise-and x mask))
+       (define ebits (arithmetic-shift x (- (sub1 p))))
        (cond
          [(zero? ebits) ; subnormal
           (bf mbits expmin)]
          [else ; normal number
-          (define c (+ (expt 2 msize) mbits))
+          (define c (+ (expt 2 (sub1 p)) mbits))
           (define exp (+ (sub1 ebits) expmin))
           (bf c exp)])])))
 
-(define (mpfr->ordinal x es sig)
+(define (mpfr->ordinal x es p)
   (let loop ([x x])
     (cond
       [(bfzero? x) 0]
       [(bfnegative? x) (- (loop (bf- x)))]
-      [(bfnan? x) (add1 (infinite-ordinal es sig))]
-      [(bfinfinite? x) (infinite-ordinal es sig)]
+      [(bfnan? x) (add1 (infinite-ordinal es p))]
+      [(bfinfinite? x) (infinite-ordinal es p)]
       [else
-       (define-values (c exp) (bigfloat->sig+exp x))
-       (define e (+ exp (bigfloat-precision x) -1))
+       ; format constants
+       ; with subnormalization MPFR's emin is not what you think it is
        (define expmin (sub1 (mpfr-get-emin)))
-       (define emin (+ expmin sig -1))
+       (define emin (+ expmin p -1))
+       ; extract fields
+       ; per MPFR documentation, `mpfr_get_z_2exp(x)` extracts the integer
+       ; using the (full) initialization precision of `x`.
+       (define-values (c exp) (bigfloat->sig+exp x))
+       (define e (+ exp (sub1 p)))
        (cond
-         [(< e emin) ; subnormal
-          (define shift (- exp expmin))
-          (arithmetic-shift c shift)]
-         [else ; normal
-          (define ebits (add1 (- exp expmin)))
-          (define mbits (bitwise-and c (sub1 (expt 2 (sub1 sig)))))
-          (+ (arithmetic-shift ebits (sub1 sig)) mbits)])])))
+         [(< e emin)
+          ; subnormal number
+          ; since `x` is fully normalized `exp < expmin`
+          (define shift (- expmin exp))
+          (arithmetic-shift c (- shift))]
+         [else
+          ; normal number
+          (define mask (sub1 (expt 2 (sub1 p))))
+          (define mbits (bitwise-and mask c))
+          (define ebits (add1 (- e emin)))
+          (+ (arithmetic-shift ebits (sub1 p)) mbits)])])))

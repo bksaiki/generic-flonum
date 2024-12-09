@@ -75,9 +75,9 @@
        (gfl-exponent) (gfl-bits)))
 
 (define (gfl->ordinal x)
-  (define sig (- (gfl-bits) (gfl-exponent)))
+  (define sig (- (gflonum-nb x) (gflonum-ex x)))
   (define-values (emin emax) (ex->ebounds (gflonum-ex x) sig))
-  ((mpfr-eval emin emax sig) (curryr mpfr->ordinal (gfl-exponent) sig) (gflonum-val x)))
+  ((mpfr-eval emin emax sig) (curryr mpfr->ordinal (gflonum-ex x) sig) (gflonum-val x)))
 
 (define (string->gfl x)
   (define sig (- (gfl-bits) (gfl-exponent)))
@@ -279,66 +279,63 @@
 
 ;;;;;;;;;;;;;;;;;;; Variadic operators ;;;;;;;;;;;;;;;;
 
-(define (mpfrv+ emin emax sig . xs)
-  (cond
-   [(null? xs) 0.bf]
-   [else
-    (define xs1 (cdr xs))
-     (cond
-      [(null? xs1) (car xs)]
-      [else
-       (define xs2 (cdr xs1))
-       (cond 
-        [(null? xs2) ((mpfr-eval emin emax sig) mpfr-add (car xs) (car xs1))]
-        [else ((mpfr-eval emin emax sig) mpfr-sum xs)])])]))
+(define (mpfrv+ . xs)
+  (match xs
+    [(list) 0.bf]
+    [(list x) (bfcopy x)]
+    [(list x y rest ...)
+     (for/fold ([sum (mpfr-add x y)]) ([z (in-list rest)])
+       (mpfr-add sum z))]))
 
-(define (mpfrv- emin emax sig x . xs)
-  (cond
-   [(null? xs) (mpfr-neg x)]
-   [(null? (cdr xs)) ((mpfr-eval emin emax sig) mpfr-sub x (car xs))]
-   [else (mpfr-neg (apply mpfrv+ emin emax sig (mpfr-neg x) xs))]))
+(define (mpfrv- x . xs)
+  (match xs
+    [(list) (mpfr-neg x)]
+    [(list y rest ...)
+     (for/fold ([diff (mpfr-sub x y)]) ([z (in-list rest)])
+       (mpfr-sub diff z))]))
 
-(define (mpfrv* emin emax sig . xs)
-  (cond
-   [(null? xs) 1.bf]
-   [else
-    (let loop ([x (car xs)] [xs (cdr xs)])
-      (cond
-       [(null? xs) x]
-       [else (loop ((mpfr-eval emin emax sig) mpfr-mul x (car xs)) (cdr xs))]))]))
+(define (mpfrv* . xs)
+  (match xs
+    [(list) 1.bf]
+    [(list x) (bfcopy x)]
+    [(list x y rest ...)
+     (for/fold ([prod (mpfr-mul x y)]) ([z (in-list rest)])
+       (mpfr-mul prod z))]))
 
-(define (mpfrv/ emin emax sig x . xs)
-  (cond
-   [(null? xs) ((mpfr-eval emin emax sig) mpfr-div 1.bf x)]
-   [else
-    (let loop ([x x] [xs xs])
-      (cond
-       [(null? xs) x]
-       [else (loop ((mpfr-eval emin emax sig) mpfr-div x (car xs)) (cdr xs))]))]))
+(define (mpfrv/ x . xs)
+  (match xs
+    [(list) (mpfr-div 1.bf x)]
+    [(list y rest ...)
+     (for/fold ([quo (mpfr-div x y)]) ([z (in-list rest)])
+       (mpfr-div quo z))]))
 
 (define (gfl+ . args)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum (apply mpfrv+ emin emax sig (map gflonum-val args))
-           (gfl-exponent) (gfl-bits)))
+  (gflonum (apply (mpfr-eval emin emax sig) mpfrv+ (map gflonum-val args))
+           (gfl-exponent)
+           (gfl-bits)))
 
 (define (gfl- head . rest)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum (apply mpfrv- emin emax sig (gflonum-val head) (map gflonum-val rest))
-           (gfl-exponent) (gfl-bits)))
+  (gflonum (apply (mpfr-eval emin emax sig) mpfrv- (gflonum-val head) (map gflonum-val rest))
+           (gfl-exponent)
+           (gfl-bits)))
 
 (define (gfl* . args)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum (apply mpfrv* emin emax sig (map gflonum-val args))
-           (gfl-exponent) (gfl-bits)))
+  (gflonum (apply (mpfr-eval emin emax sig) mpfrv* (map gflonum-val args))
+           (gfl-exponent)
+           (gfl-bits)))
 
 (define (gfl/ head . rest)
   (define sig (- (gfl-bits) (gfl-exponent)))
   (define-values (emin emax) (ex->ebounds (gfl-exponent) sig))
-  (gflonum (apply mpfrv/ emin emax sig (gflonum-val head) (map gflonum-val rest))
-           (gfl-exponent) (gfl-bits)))
+  (gflonum (apply (mpfr-eval emin emax sig) mpfrv/ (gflonum-val head) (map gflonum-val rest))
+           (gfl-exponent)
+           (gfl-bits)))
 
 (define (gflmax2 x y)
   (cond
