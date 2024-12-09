@@ -8,15 +8,18 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
+        racket: [ '8.0', 'current' ]
     
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
         with:
           path: src
       - name: "Install Racket"
-        uses: Bogdanp/setup-racket@v0.12
+        uses: Bogdanp/setup-racket@v1.11
+        with:
+          version: ${{ matrix.racket }}
       - name: "Install generic-flonum as package"
         run: raco pkg install --no-cache --auto --name generic-flonum src/
       - name: "Unit tests"
