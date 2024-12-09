@@ -146,17 +146,6 @@
     (mpfr-subnormalize r t (mpfr-rounding-mode)))
   r)
 
-(define mpfr-sum-fun
-  (get-mpfr-fun 'mpfr_sum (_fun _mpfr-pointer (_list i _mpfr-pointer) _ulong _rnd_t -> _int)))
-
-(define (mpfr-sum xs)
-  (define r (bf 0))
-  (define t (mpfr-sum-fun r xs (length xs) (mpfr-rounding-mode)))
-  (mpfr-check-range r 0 (mpfr-rounding-mode))
-  (when (mpfr-subnormalize?)
-    (mpfr-subnormalize r t (mpfr-rounding-mode)))
-  r)
-
 (define (mpfr-set x)
   (define v (if (bigfloat? x) (bfcopy x) (bf x)))
   (mpfr-check-range v 0 (mpfr-rounding-mode))

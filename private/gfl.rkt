@@ -299,8 +299,8 @@
     [(list) 1.bf]
     [(list x) (bfcopy x)]
     [(list x y rest ...)
-     (for/fold ([sum (mpfr-mul x y)]) ([z (in-list rest)])
-       (mpfr-mul sum z))]))
+     (for/fold ([prod (mpfr-mul x y)]) ([z (in-list rest)])
+       (mpfr-mul prod z))]))
 
 (define (mpfrv/ x . xs)
   (match xs

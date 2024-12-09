@@ -11,7 +11,6 @@
          mpfr-lgamma
          mpfr-jn
          mpfr-yn
-         mpfr-sum
          mpfr-set
          mpfr-set-ebounds!)
 
